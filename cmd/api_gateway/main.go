@@ -24,7 +24,6 @@ func main() {
 		grpcTarget = "localhost:50051"
 	}
 
-	// Connect to gRPC server
 	conn, err := grpc.Dial(grpcTarget, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -35,7 +34,6 @@ func main() {
 
 	r := gin.Default()
 
-	// Configure CORS
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -58,8 +56,6 @@ func main() {
 				return
 			}
 
-			// In a real app, you would extract the user ID from the JWT token.
-			// Here we take it from a custom header for simplicity.
 			senderID := c.GetHeader("X-User-ID")
 			if senderID == "" {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "X-User-ID header is required"})

@@ -50,7 +50,6 @@ type DialogResult struct {
 
 func (r *messagingRepository) GetDialogsForUser(ctx context.Context, userID string) ([]DialogResult, error) {
 	var recentMessages []models.Message
-	// Grouping by both the other user and the project_id
 	err := r.db.WithContext(ctx).
 		Raw(`
 			SELECT DISTINCT ON (

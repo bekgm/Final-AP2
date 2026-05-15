@@ -20,7 +20,6 @@ func main() {
 
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		// fallback to a default for local development if not provided
 		dsn = "host=localhost user=postgres password=postgres dbname=messaging_db port=5432 sslmode=disable TimeZone=UTC"
 	}
 
@@ -29,7 +28,6 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	// Auto-migrate models
 	if err := db.AutoMigrate(&models.Message{}); err != nil {
 		log.Fatalf("failed to auto migrate: %v", err)
 	}
