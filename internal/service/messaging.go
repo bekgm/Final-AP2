@@ -21,6 +21,7 @@ func (s *MessagingService) SendMessage(ctx context.Context, req *pb.SendMessageR
 	msg := &models.Message{
 		SenderID:   req.SenderId,
 		ReceiverID: req.ReceiverId,
+		ProjectID:  req.ProjectId,
 		Content:    req.Content,
 	}
 
@@ -33,6 +34,7 @@ func (s *MessagingService) SendMessage(ctx context.Context, req *pb.SendMessageR
 			Id:         msg.ID,
 			SenderId:   msg.SenderID,
 			ReceiverId: msg.ReceiverID,
+			ProjectId:  msg.ProjectID,
 			Content:    msg.Content,
 			Timestamp:  msg.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		},
@@ -46,7 +48,7 @@ func (s *MessagingService) GetMessages(ctx context.Context, req *pb.GetMessagesR
 	}
 	offset := int(req.Offset)
 
-	messages, err := s.repo.GetMessagesBetweenUsers(ctx, req.UserId_1, req.UserId_2, limit, offset)
+	messages, err := s.repo.GetMessagesBetweenUsers(ctx, req.UserId_1, req.UserId_2, req.ProjectId, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -57,6 +59,7 @@ func (s *MessagingService) GetMessages(ctx context.Context, req *pb.GetMessagesR
 			Id:         msg.ID,
 			SenderId:   msg.SenderID,
 			ReceiverId: msg.ReceiverID,
+			ProjectId:  msg.ProjectID,
 			Content:    msg.Content,
 			Timestamp:  msg.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		})
@@ -75,10 +78,12 @@ func (s *MessagingService) GetDialogs(ctx context.Context, req *pb.GetDialogsReq
 	for _, d := range dialogs {
 		pbDialogs = append(pbDialogs, &pb.Dialog{
 			OtherUserId: d.OtherUserID,
+			ProjectId:   d.ProjectID,
 			LastMessage: &pb.Message{
 				Id:         d.LastMessage.ID,
 				SenderId:   d.LastMessage.SenderID,
 				ReceiverId: d.LastMessage.ReceiverID,
+				ProjectId:  d.LastMessage.ProjectID,
 				Content:    d.LastMessage.Content,
 				Timestamp:  d.LastMessage.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 			},

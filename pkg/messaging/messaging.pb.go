@@ -26,8 +26,9 @@ type Message struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	SenderId      string                 `protobuf:"bytes,2,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`
 	ReceiverId    string                 `protobuf:"bytes,3,opt,name=receiver_id,json=receiverId,proto3" json:"receiver_id,omitempty"`
-	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
-	Timestamp     string                 `protobuf:"bytes,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	ProjectId     string                 `protobuf:"bytes,4,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	Content       string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`
+	Timestamp     string                 `protobuf:"bytes,6,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -83,6 +84,13 @@ func (x *Message) GetReceiverId() string {
 	return ""
 }
 
+func (x *Message) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
 func (x *Message) GetContent() string {
 	if x != nil {
 		return x.Content
@@ -100,8 +108,9 @@ func (x *Message) GetTimestamp() string {
 type Dialog struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OtherUserId   string                 `protobuf:"bytes,1,opt,name=other_user_id,json=otherUserId,proto3" json:"other_user_id,omitempty"`
-	LastMessage   *Message               `protobuf:"bytes,2,opt,name=last_message,json=lastMessage,proto3" json:"last_message,omitempty"`
-	UnreadCount   int32                  `protobuf:"varint,3,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
+	ProjectId     string                 `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	LastMessage   *Message               `protobuf:"bytes,3,opt,name=last_message,json=lastMessage,proto3" json:"last_message,omitempty"`
+	UnreadCount   int32                  `protobuf:"varint,4,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -143,6 +152,13 @@ func (x *Dialog) GetOtherUserId() string {
 	return ""
 }
 
+func (x *Dialog) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
 func (x *Dialog) GetLastMessage() *Message {
 	if x != nil {
 		return x.LastMessage
@@ -161,7 +177,8 @@ type SendMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SenderId      string                 `protobuf:"bytes,1,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`
 	ReceiverId    string                 `protobuf:"bytes,2,opt,name=receiver_id,json=receiverId,proto3" json:"receiver_id,omitempty"`
-	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	ProjectId     string                 `protobuf:"bytes,3,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -206,6 +223,13 @@ func (x *SendMessageRequest) GetSenderId() string {
 func (x *SendMessageRequest) GetReceiverId() string {
 	if x != nil {
 		return x.ReceiverId
+	}
+	return ""
+}
+
+func (x *SendMessageRequest) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
 	}
 	return ""
 }
@@ -265,8 +289,9 @@ type GetMessagesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId_1      string                 `protobuf:"bytes,1,opt,name=user_id_1,json=userId1,proto3" json:"user_id_1,omitempty"`
 	UserId_2      string                 `protobuf:"bytes,2,opt,name=user_id_2,json=userId2,proto3" json:"user_id_2,omitempty"`
-	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
-	Offset        int32                  `protobuf:"varint,4,opt,name=offset,proto3" json:"offset,omitempty"`
+	ProjectId     string                 `protobuf:"bytes,3,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -311,6 +336,13 @@ func (x *GetMessagesRequest) GetUserId_1() string {
 func (x *GetMessagesRequest) GetUserId_2() string {
 	if x != nil {
 		return x.UserId_2
+	}
+	return ""
+}
+
+func (x *GetMessagesRequest) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
 	}
 	return ""
 }
@@ -465,30 +497,38 @@ var File_messaging_proto protoreflect.FileDescriptor
 
 const file_messaging_proto_rawDesc = "" +
 	"\n" +
-	"\x0fmessaging.proto\x12\tmessaging\"\x8f\x01\n" +
+	"\x0fmessaging.proto\x12\tmessaging\"\xae\x01\n" +
 	"\aMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tsender_id\x18\x02 \x01(\tR\bsenderId\x12\x1f\n" +
 	"\vreceiver_id\x18\x03 \x01(\tR\n" +
-	"receiverId\x12\x18\n" +
-	"\acontent\x18\x04 \x01(\tR\acontent\x12\x1c\n" +
-	"\ttimestamp\x18\x05 \x01(\tR\ttimestamp\"\x86\x01\n" +
+	"receiverId\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x04 \x01(\tR\tprojectId\x12\x18\n" +
+	"\acontent\x18\x05 \x01(\tR\acontent\x12\x1c\n" +
+	"\ttimestamp\x18\x06 \x01(\tR\ttimestamp\"\xa5\x01\n" +
 	"\x06Dialog\x12\"\n" +
-	"\rother_user_id\x18\x01 \x01(\tR\votherUserId\x125\n" +
-	"\flast_message\x18\x02 \x01(\v2\x12.messaging.MessageR\vlastMessage\x12!\n" +
-	"\funread_count\x18\x03 \x01(\x05R\vunreadCount\"l\n" +
+	"\rother_user_id\x18\x01 \x01(\tR\votherUserId\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x02 \x01(\tR\tprojectId\x125\n" +
+	"\flast_message\x18\x03 \x01(\v2\x12.messaging.MessageR\vlastMessage\x12!\n" +
+	"\funread_count\x18\x04 \x01(\x05R\vunreadCount\"\x8b\x01\n" +
 	"\x12SendMessageRequest\x12\x1b\n" +
 	"\tsender_id\x18\x01 \x01(\tR\bsenderId\x12\x1f\n" +
 	"\vreceiver_id\x18\x02 \x01(\tR\n" +
-	"receiverId\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\"C\n" +
+	"receiverId\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x03 \x01(\tR\tprojectId\x12\x18\n" +
+	"\acontent\x18\x04 \x01(\tR\acontent\"C\n" +
 	"\x13SendMessageResponse\x12,\n" +
-	"\amessage\x18\x01 \x01(\v2\x12.messaging.MessageR\amessage\"z\n" +
+	"\amessage\x18\x01 \x01(\v2\x12.messaging.MessageR\amessage\"\x99\x01\n" +
 	"\x12GetMessagesRequest\x12\x1a\n" +
 	"\tuser_id_1\x18\x01 \x01(\tR\auserId1\x12\x1a\n" +
-	"\tuser_id_2\x18\x02 \x01(\tR\auserId2\x12\x14\n" +
-	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x16\n" +
-	"\x06offset\x18\x04 \x01(\x05R\x06offset\"E\n" +
+	"\tuser_id_2\x18\x02 \x01(\tR\auserId2\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x03 \x01(\tR\tprojectId\x12\x14\n" +
+	"\x05limit\x18\x04 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x05 \x01(\x05R\x06offset\"E\n" +
 	"\x13GetMessagesResponse\x12.\n" +
 	"\bmessages\x18\x01 \x03(\v2\x12.messaging.MessageR\bmessages\",\n" +
 	"\x11GetDialogsRequest\x12\x17\n" +
