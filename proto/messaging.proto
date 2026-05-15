@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package messaging;
+
+option go_package = "github.com/bekgm/Final-AP2/pkg/messaging;messaging";
+
+service MessagingService {
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+  rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse);
+  rpc GetDialogs (GetDialogsRequest) returns (GetDialogsResponse);
+}
+
+message Message {
+  string id = 1;
+  string sender_id = 2;
+  string receiver_id = 3;
+  string content = 4;
+  string timestamp = 5;
+}
+
+message Dialog {
+  string other_user_id = 1;
+  Message last_message = 2;
+  int32 unread_count = 3;
+}
+
+message SendMessageRequest {
+  string sender_id = 1;
+  string receiver_id = 2;
+  string content = 3;
+}
+
+message SendMessageResponse {
+  Message message = 1;
+}
+
+message GetMessagesRequest {
+  string user_id_1 = 1;
+  string user_id_2 = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetMessagesResponse {
+  repeated Message messages = 1;
+}
+
+message GetDialogsRequest {
+  string user_id = 1;
+}
+
+message GetDialogsResponse {
+  repeated Dialog dialogs = 1;
+}
