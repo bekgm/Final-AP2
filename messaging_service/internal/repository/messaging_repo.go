@@ -53,17 +53,19 @@ func (r *messagingRepository) GetDialogsForUser(ctx context.Context, userID stri
 	err := r.db.WithContext(ctx).
 		Raw(`
 			SELECT DISTINCT ON (
-				CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END,
+				GREATEST(sender_id, receiver_id),
+				LEAST(sender_id, receiver_id),
 				project_id
 			)
 			id, sender_id, receiver_id, project_id, content, created_at, updated_at
 			FROM messages
 			WHERE sender_id = ? OR receiver_id = ?
 			ORDER BY 
-				CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END,
+				GREATEST(sender_id, receiver_id),
+				LEAST(sender_id, receiver_id),
 				project_id,
 				created_at DESC
-		`, userID, userID, userID, userID).
+		`, userID, userID).
 		Scan(&recentMessages).Error
 
 	if err != nil {

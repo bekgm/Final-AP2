@@ -20,7 +20,9 @@ export async function renderProfile(app) {
     return;
   }
 
-  const roleName = (user.role || '').replace('ROLE_', '').toLowerCase();
+  let roleName = String(user.role || '').replace('ROLE_', '').toLowerCase();
+  if (roleName === '1') roleName = 'client';
+  if (roleName === '2') roleName = 'freelancer';
   const roleLabel = roleName === 'client' ? 'Client' : 'Freelancer';
 
   app.querySelector('.profile-page').innerHTML = `

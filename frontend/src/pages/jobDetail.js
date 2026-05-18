@@ -28,6 +28,9 @@ export async function renderJobDetail(app, jobId) {
   const isOwner = user?.id === job.client_id;
   const jobOpen = job.status === 'JOB_STATUS_OPEN';
 
+  const appliedJobs = JSON.parse(localStorage.getItem(`applied_${user?.id}`) || '[]');
+  const hasApplied = appliedJobs.includes(jobId);
+
   app.querySelector('.job-detail').innerHTML = `
     <div style="margin-bottom:20px"><a href="#/jobs" class="btn btn-ghost btn-sm">← Back to Jobs</a></div>
     <div class="job-detail-grid">
@@ -48,8 +51,11 @@ export async function renderJobDetail(app, jobId) {
             <div style="font-size:2rem;font-weight:800;color:var(--success);">${formatBudget(job.budget)}</div>
             <div style="color:var(--text-secondary);font-size:0.85rem;">Project Budget</div>
           </div>
-          ${isAuth && isFreelancer && jobOpen ? `
-            <button class="btn btn-primary btn-lg" style="width:100%" id="apply-btn">Apply Now</button>
+          ${isAuth && !isOwner && jobOpen ? `
+            <button class="btn btn-${hasApplied ? 'secondary' : 'primary'} btn-lg" style="width:100%; margin-bottom: 10px;" id="apply-btn" ${hasApplied ? 'disabled' : ''}>
+              ${hasApplied ? 'Already Applied' : 'Apply Now'}
+            </button>
+            <button class="btn btn-secondary btn-lg" style="width:100%" id="message-btn">Message Client</button>
           ` : ''}
           ${!isAuth ? `
             <a href="#/register" class="btn btn-primary btn-lg" style="width:100%;text-align:center;display:block;">Sign Up to Apply</a>
@@ -61,34 +67,83 @@ export async function renderJobDetail(app, jobId) {
   `;
 
   // Apply modal for freelancers
-  document.getElementById('apply-btn')?.addEventListener('click', () => {
+  const applyBtn = document.getElementById('apply-btn');
+  if (applyBtn && !hasApplied) {
+    applyBtn.addEventListener('click', () => {
+      showModal(`
+        <h2>Apply to this Job</h2>
+        <form id="apply-form">
+          <div class="form-group">
+            <label class="form-label" for="cover-letter">Cover Letter</label>
+            <textarea class="form-textarea" id="cover-letter" placeholder="Explain why you're the perfect fit for this project..." required style="min-height:150px;"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancel-apply">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="submit-apply">Submit Application</button>
+          </div>
+        </form>
+      `);
+      document.getElementById('cancel-apply').addEventListener('click', closeModal);
+      document.getElementById('apply-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submit-apply');
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+        try {
+          await api.applyToJob(jobId, document.getElementById('cover-letter').value);
+          
+          const applied = JSON.parse(localStorage.getItem(`applied_${user.id}`) || '[]');
+          if (!applied.includes(jobId)) {
+            applied.push(jobId);
+            localStorage.setItem(`applied_${user.id}`, JSON.stringify(applied));
+          }
+
+          closeModal();
+          showToast('Application submitted!', 'success');
+          
+          // Update button state immediately
+          applyBtn.className = 'btn btn-secondary btn-lg';
+          applyBtn.textContent = 'Already Applied';
+          applyBtn.disabled = true;
+        } catch (err) {
+          showToast(err.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Submit Application';
+        }
+      });
+    });
+  }
+
+  // Message modal for freelancers
+  document.getElementById('message-btn')?.addEventListener('click', () => {
     showModal(`
-      <h2>Apply to this Job</h2>
-      <form id="apply-form">
+      <h2>Message Client</h2>
+      <form id="message-form">
         <div class="form-group">
-          <label class="form-label" for="cover-letter">Cover Letter</label>
-          <textarea class="form-textarea" id="cover-letter" placeholder="Explain why you're the perfect fit for this project..." required style="min-height:150px;"></textarea>
+          <label class="form-label" for="message-content">Message</label>
+          <textarea class="form-textarea" id="message-content" placeholder="Hello, I have a question about this job..." required style="min-height:100px;"></textarea>
         </div>
         <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" id="cancel-apply">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="submit-apply">Submit Application</button>
+          <button type="button" class="btn btn-secondary" id="cancel-msg">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submit-msg">Send Message</button>
         </div>
       </form>
     `);
-    document.getElementById('cancel-apply').addEventListener('click', closeModal);
-    document.getElementById('apply-form').addEventListener('submit', async (e) => {
+    document.getElementById('cancel-msg').addEventListener('click', closeModal);
+    document.getElementById('message-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = document.getElementById('submit-apply');
+      const btn = document.getElementById('submit-msg');
       btn.disabled = true;
-      btn.textContent = 'Submitting...';
+      btn.textContent = 'Sending...';
       try {
-        await api.applyToJob(jobId, document.getElementById('cover-letter').value);
+        await api.sendMessage(job.client_id, document.getElementById('message-content').value, jobId);
         closeModal();
-        showToast('Application submitted!', 'success');
+        showToast('Message sent! Redirecting to chat...', 'success');
+        setTimeout(() => router.navigate('/messages'), 1000);
       } catch (err) {
         showToast(err.message, 'error');
         btn.disabled = false;
-        btn.textContent = 'Submit Application';
+        btn.textContent = 'Send Message';
       }
     });
   });
