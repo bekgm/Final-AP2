@@ -2,7 +2,7 @@ import { api } from '../api.js';
 import { router } from '../router.js';
 import { renderNavbar, bindNavbar, showToast, showModal, closeModal, getInitials } from '../components.js';
 
-export async function renderProfile(app) {
+export async function renderProfile(app, targetUserId = null) {
   if (!api.isAuthenticated()) {
     router.navigate('/login');
     return;
@@ -11,10 +11,13 @@ export async function renderProfile(app) {
   app.innerHTML = `${renderNavbar()}<div class="profile-page container"><div class="loading-center"><div class="spinner"></div></div></div>`;
   bindNavbar();
 
+  const isOwnProfile = !targetUserId || targetUserId === api.userId;
+  const uidToFetch = targetUserId || api.userId;
+
   let user;
   try {
-    user = await api.getUserById(api.userId);
-    api.setUser(user);
+    user = await api.getUserById(uidToFetch);
+    if (isOwnProfile) api.setUser(user);
   } catch (err) {
     app.querySelector('.profile-page').innerHTML = `<div class="empty-state"><h3>Failed to load profile</h3><p>${err.message}</p></div>`;
     return;
@@ -30,6 +33,7 @@ export async function renderProfile(app) {
   const portfolioLink = bioParts[1] || '';
 
   app.querySelector('.profile-page').innerHTML = `
+    <div style="margin-bottom:20px"><a href="#" onclick="history.back(); return false;" class="btn btn-ghost btn-sm">← Back</a></div>
     <div class="profile-header-section">
       <div class="profile-avatar-large">${getInitials(user.name)}</div>
       <div>
@@ -42,9 +46,9 @@ export async function renderProfile(app) {
       </div>
     </div>
 
-    <button class="btn btn-secondary" id="edit-profile-btn" style="margin-bottom:32px;">✏️ Edit Profile</button>
+    ${isOwnProfile ? `<button class="btn btn-secondary" id="edit-profile-btn" style="margin-bottom:32px;">✏️ Edit Profile</button>` : ''}
 
-    <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">${roleName === 'client' ? 'My Posted Jobs' : 'My Activity'}</h2>
+    <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">${roleName === 'client' ? 'Posted Jobs' : 'Activity'}</h2>
     <div id="user-jobs">
       <div class="loading-center"><div class="spinner"></div></div>
     </div>
@@ -79,7 +83,9 @@ export async function renderProfile(app) {
   }
 
   // Edit profile modal
-  document.getElementById('edit-profile-btn').addEventListener('click', () => {
+  const editBtn = document.getElementById('edit-profile-btn');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
     showModal(`
       <h2>Edit Profile</h2>
       <form id="edit-profile-form">
@@ -134,6 +140,7 @@ export async function renderProfile(app) {
       }
     });
   });
+  }
 }
 
 function escapeHtml(str) {

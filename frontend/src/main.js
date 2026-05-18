@@ -20,4 +20,5 @@ router
   .on('/jobs/:id', (params) => renderJobDetail(app, params.id))
   .on('/messages', () => renderMessages(app))
   .on('/profile', () => renderProfile(app))
+  .on('/profile/:id', (params) => renderProfile(app, params.id))
   .start();
