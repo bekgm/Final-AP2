@@ -79,6 +79,16 @@ func (h *JobHandler) AcceptFreelancer(ctx context.Context, req *pb.AcceptFreelan
 	}, nil
 }
 
+func (h *JobHandler) CompleteJob(ctx context.Context, req *pb.CompleteJobRequest) (*pb.CompleteJobResponse, error) {
+	job, err := h.uc.CompleteJob(req.JobId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+	return &pb.CompleteJobResponse{
+		Job: domainJobToProto(job),
+	}, nil
+}
+
 // ─────────────────────────────────────────────
 // Mappers
 // ─────────────────────────────────────────────

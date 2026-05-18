@@ -155,7 +155,8 @@ export function renderMessages(app) {
         return;
       }
       const myId = api.userId;
-      container.innerHTML = messages.map(m => {
+      const reversed = [...messages].reverse();
+      container.innerHTML = reversed.map(m => {
         const senderId = m.sender_id || m.senderId;
         const isMine = senderId === myId;
         const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -173,6 +174,20 @@ export function renderMessages(app) {
   }
 
   loadDialogs();
+
+  const pollInterval = setInterval(() => {
+    const dialogsListEl = document.getElementById('dialogs-list');
+    if (!dialogsListEl) {
+      clearInterval(pollInterval);
+      return;
+    }
+    loadDialogs();
+    if (activeDialog) {
+      loadMessages(activeDialog.otherUserId, activeDialog.projectId);
+      localStorage.setItem(`chat_read_${activeDialog.otherUserId}`, Date.now());
+      bindNavbar();
+    }
+  }, 3000);
 }
 
 function escapeHtml(str) {

@@ -25,6 +25,7 @@ const (
 	JobService_ApplyToJob_FullMethodName       = "/job.JobService/ApplyToJob"
 	JobService_AcceptFreelancer_FullMethodName = "/job.JobService/AcceptFreelancer"
 	JobService_ListApplications_FullMethodName = "/job.JobService/ListApplications"
+	JobService_CompleteJob_FullMethodName      = "/job.JobService/CompleteJob"
 )
 
 // JobServiceClient is the client API for JobService service.
@@ -39,6 +40,7 @@ type JobServiceClient interface {
 	ApplyToJob(ctx context.Context, in *ApplyToJobRequest, opts ...grpc.CallOption) (*ApplyToJobResponse, error)
 	AcceptFreelancer(ctx context.Context, in *AcceptFreelancerRequest, opts ...grpc.CallOption) (*AcceptFreelancerResponse, error)
 	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
+	CompleteJob(ctx context.Context, in *CompleteJobRequest, opts ...grpc.CallOption) (*CompleteJobResponse, error)
 }
 
 type jobServiceClient struct {
@@ -109,6 +111,16 @@ func (c *jobServiceClient) ListApplications(ctx context.Context, in *ListApplica
 	return out, nil
 }
 
+func (c *jobServiceClient) CompleteJob(ctx context.Context, in *CompleteJobRequest, opts ...grpc.CallOption) (*CompleteJobResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompleteJobResponse)
+	err := c.cc.Invoke(ctx, JobService_CompleteJob_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // JobServiceServer is the server API for JobService service.
 // All implementations must embed UnimplementedJobServiceServer
 // for forward compatibility.
@@ -121,6 +133,7 @@ type JobServiceServer interface {
 	ApplyToJob(context.Context, *ApplyToJobRequest) (*ApplyToJobResponse, error)
 	AcceptFreelancer(context.Context, *AcceptFreelancerRequest) (*AcceptFreelancerResponse, error)
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
+	CompleteJob(context.Context, *CompleteJobRequest) (*CompleteJobResponse, error)
 	mustEmbedUnimplementedJobServiceServer()
 }
 
@@ -148,6 +161,9 @@ func (UnimplementedJobServiceServer) AcceptFreelancer(context.Context, *AcceptFr
 }
 func (UnimplementedJobServiceServer) ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListApplications not implemented")
+}
+func (UnimplementedJobServiceServer) CompleteJob(context.Context, *CompleteJobRequest) (*CompleteJobResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteJob not implemented")
 }
 func (UnimplementedJobServiceServer) mustEmbedUnimplementedJobServiceServer() {}
 func (UnimplementedJobServiceServer) testEmbeddedByValue()                    {}
@@ -278,6 +294,24 @@ func _JobService_ListApplications_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _JobService_CompleteJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).CompleteJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_CompleteJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).CompleteJob(ctx, req.(*CompleteJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // JobService_ServiceDesc is the grpc.ServiceDesc for JobService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -308,6 +342,10 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListApplications",
 			Handler:    _JobService_ListApplications_Handler,
+		},
+		{
+			MethodName: "CompleteJob",
+			Handler:    _JobService_CompleteJob_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

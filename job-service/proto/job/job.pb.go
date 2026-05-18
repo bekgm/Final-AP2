@@ -918,6 +918,94 @@ func (x *ListApplicationsResponse) GetApplications() []*Application {
 	return nil
 }
 
+type CompleteJobRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	JobId         string                 `protobuf:"bytes,1,opt,name=job_id,json=jobId,proto3" json:"job_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteJobRequest) Reset() {
+	*x = CompleteJobRequest{}
+	mi := &file_proto_job_job_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteJobRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteJobRequest) ProtoMessage() {}
+
+func (x *CompleteJobRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_job_job_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteJobRequest.ProtoReflect.Descriptor instead.
+func (*CompleteJobRequest) Descriptor() ([]byte, []int) {
+	return file_proto_job_job_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CompleteJobRequest) GetJobId() string {
+	if x != nil {
+		return x.JobId
+	}
+	return ""
+}
+
+type CompleteJobResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Job           *Job                   `protobuf:"bytes,1,opt,name=job,proto3" json:"job,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteJobResponse) Reset() {
+	*x = CompleteJobResponse{}
+	mi := &file_proto_job_job_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteJobResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteJobResponse) ProtoMessage() {}
+
+func (x *CompleteJobResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_job_job_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteJobResponse.ProtoReflect.Descriptor instead.
+func (*CompleteJobResponse) Descriptor() ([]byte, []int) {
+	return file_proto_job_job_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CompleteJobResponse) GetJob() *Job {
+	if x != nil {
+		return x.Job
+	}
+	return nil
+}
+
 var File_proto_job_job_proto protoreflect.FileDescriptor
 
 const file_proto_job_job_proto_rawDesc = "" +
@@ -975,7 +1063,11 @@ const file_proto_job_job_proto_rawDesc = "" +
 	"\x17ListApplicationsRequest\x12\x15\n" +
 	"\x06job_id\x18\x01 \x01(\tR\x05jobId\"P\n" +
 	"\x18ListApplicationsResponse\x124\n" +
-	"\fapplications\x18\x01 \x03(\v2\x10.job.ApplicationR\fapplications*o\n" +
+	"\fapplications\x18\x01 \x03(\v2\x10.job.ApplicationR\fapplications\"+\n" +
+	"\x12CompleteJobRequest\x12\x15\n" +
+	"\x06job_id\x18\x01 \x01(\tR\x05jobId\"1\n" +
+	"\x13CompleteJobResponse\x12\x1a\n" +
+	"\x03job\x18\x01 \x01(\v2\b.job.JobR\x03job*o\n" +
 	"\tJobStatus\x12\x1a\n" +
 	"\x16JOB_STATUS_UNSPECIFIED\x10\x00\x12\x13\n" +
 	"\x0fJOB_STATUS_OPEN\x10\x01\x12\x1a\n" +
@@ -985,7 +1077,7 @@ const file_proto_job_job_proto_rawDesc = "" +
 	"\x1eAPPLICATION_STATUS_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aAPPLICATION_STATUS_PENDING\x10\x01\x12\x1f\n" +
 	"\x1bAPPLICATION_STATUS_ACCEPTED\x10\x02\x12\x1f\n" +
-	"\x1bAPPLICATION_STATUS_REJECTED\x10\x032\x95\x03\n" +
+	"\x1bAPPLICATION_STATUS_REJECTED\x10\x032\xd7\x03\n" +
 	"\n" +
 	"JobService\x12:\n" +
 	"\tCreateJob\x12\x15.job.CreateJobRequest\x1a\x16.job.CreateJobResponse\x121\n" +
@@ -994,7 +1086,8 @@ const file_proto_job_job_proto_rawDesc = "" +
 	"\n" +
 	"ApplyToJob\x12\x16.job.ApplyToJobRequest\x1a\x17.job.ApplyToJobResponse\x12O\n" +
 	"\x10AcceptFreelancer\x12\x1c.job.AcceptFreelancerRequest\x1a\x1d.job.AcceptFreelancerResponse\x12O\n" +
-	"\x10ListApplications\x12\x1c.job.ListApplicationsRequest\x1a\x1d.job.ListApplicationsResponseB>Z<github.com/yourname/freelance-platform/job-service/proto/jobb\x06proto3"
+	"\x10ListApplications\x12\x1c.job.ListApplicationsRequest\x1a\x1d.job.ListApplicationsResponse\x12@\n" +
+	"\vCompleteJob\x12\x17.job.CompleteJobRequest\x1a\x18.job.CompleteJobResponseB>Z<github.com/yourname/freelance-platform/job-service/proto/jobb\x06proto3"
 
 var (
 	file_proto_job_job_proto_rawDescOnce sync.Once
@@ -1009,7 +1102,7 @@ func file_proto_job_job_proto_rawDescGZIP() []byte {
 }
 
 var file_proto_job_job_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_proto_job_job_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_proto_job_job_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_proto_job_job_proto_goTypes = []any{
 	(JobStatus)(0),                   // 0: job.JobStatus
 	(ApplicationStatus)(0),           // 1: job.ApplicationStatus
@@ -1027,14 +1120,16 @@ var file_proto_job_job_proto_goTypes = []any{
 	(*AcceptFreelancerResponse)(nil), // 13: job.AcceptFreelancerResponse
 	(*ListApplicationsRequest)(nil),  // 14: job.ListApplicationsRequest
 	(*ListApplicationsResponse)(nil), // 15: job.ListApplicationsResponse
-	(*timestamppb.Timestamp)(nil),    // 16: google.protobuf.Timestamp
+	(*CompleteJobRequest)(nil),       // 16: job.CompleteJobRequest
+	(*CompleteJobResponse)(nil),      // 17: job.CompleteJobResponse
+	(*timestamppb.Timestamp)(nil),    // 18: google.protobuf.Timestamp
 }
 var file_proto_job_job_proto_depIdxs = []int32{
 	0,  // 0: job.Job.status:type_name -> job.JobStatus
-	16, // 1: job.Job.created_at:type_name -> google.protobuf.Timestamp
-	16, // 2: job.Job.updated_at:type_name -> google.protobuf.Timestamp
+	18, // 1: job.Job.created_at:type_name -> google.protobuf.Timestamp
+	18, // 2: job.Job.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 3: job.Application.status:type_name -> job.ApplicationStatus
-	16, // 4: job.Application.created_at:type_name -> google.protobuf.Timestamp
+	18, // 4: job.Application.created_at:type_name -> google.protobuf.Timestamp
 	2,  // 5: job.CreateJobResponse.job:type_name -> job.Job
 	2,  // 6: job.GetJobResponse.job:type_name -> job.Job
 	2,  // 7: job.ListJobsResponse.jobs:type_name -> job.Job
@@ -1042,23 +1137,26 @@ var file_proto_job_job_proto_depIdxs = []int32{
 	2,  // 9: job.AcceptFreelancerResponse.job:type_name -> job.Job
 	3,  // 10: job.AcceptFreelancerResponse.application:type_name -> job.Application
 	3,  // 11: job.ListApplicationsResponse.applications:type_name -> job.Application
-	4,  // 12: job.JobService.CreateJob:input_type -> job.CreateJobRequest
-	6,  // 13: job.JobService.GetJob:input_type -> job.GetJobRequest
-	8,  // 14: job.JobService.ListJobs:input_type -> job.ListJobsRequest
-	10, // 15: job.JobService.ApplyToJob:input_type -> job.ApplyToJobRequest
-	12, // 16: job.JobService.AcceptFreelancer:input_type -> job.AcceptFreelancerRequest
-	14, // 17: job.JobService.ListApplications:input_type -> job.ListApplicationsRequest
-	5,  // 18: job.JobService.CreateJob:output_type -> job.CreateJobResponse
-	7,  // 19: job.JobService.GetJob:output_type -> job.GetJobResponse
-	9,  // 20: job.JobService.ListJobs:output_type -> job.ListJobsResponse
-	11, // 21: job.JobService.ApplyToJob:output_type -> job.ApplyToJobResponse
-	13, // 22: job.JobService.AcceptFreelancer:output_type -> job.AcceptFreelancerResponse
-	15, // 23: job.JobService.ListApplications:output_type -> job.ListApplicationsResponse
-	18, // [18:24] is the sub-list for method output_type
-	12, // [12:18] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	2,  // 12: job.CompleteJobResponse.job:type_name -> job.Job
+	4,  // 13: job.JobService.CreateJob:input_type -> job.CreateJobRequest
+	6,  // 14: job.JobService.GetJob:input_type -> job.GetJobRequest
+	8,  // 15: job.JobService.ListJobs:input_type -> job.ListJobsRequest
+	10, // 16: job.JobService.ApplyToJob:input_type -> job.ApplyToJobRequest
+	12, // 17: job.JobService.AcceptFreelancer:input_type -> job.AcceptFreelancerRequest
+	14, // 18: job.JobService.ListApplications:input_type -> job.ListApplicationsRequest
+	16, // 19: job.JobService.CompleteJob:input_type -> job.CompleteJobRequest
+	5,  // 20: job.JobService.CreateJob:output_type -> job.CreateJobResponse
+	7,  // 21: job.JobService.GetJob:output_type -> job.GetJobResponse
+	9,  // 22: job.JobService.ListJobs:output_type -> job.ListJobsResponse
+	11, // 23: job.JobService.ApplyToJob:output_type -> job.ApplyToJobResponse
+	13, // 24: job.JobService.AcceptFreelancer:output_type -> job.AcceptFreelancerResponse
+	15, // 25: job.JobService.ListApplications:output_type -> job.ListApplicationsResponse
+	17, // 26: job.JobService.CompleteJob:output_type -> job.CompleteJobResponse
+	20, // [20:27] is the sub-list for method output_type
+	13, // [13:20] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_proto_job_job_proto_init() }
@@ -1072,7 +1170,7 @@ func file_proto_job_job_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_job_job_proto_rawDesc), len(file_proto_job_job_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -61,6 +61,13 @@ export async function renderJobDetail(app, jobId) {
             <a href="#/register" class="btn btn-primary btn-lg" style="width:100%;text-align:center;display:block;">Sign Up to Apply</a>
           ` : ''}
           ${isOwner ? '<div id="applications-section"></div>' : ''}
+          ${isOwner && (job.status === 'JOB_STATUS_IN_PROGRESS' || job.status === 'in_progress') ? `
+            <div style="margin-top: 15px; padding: 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-lighter);">
+              <h4 style="margin-bottom:10px; font-weight:700; color:var(--text);">Manage Project</h4>
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">This project is currently in progress. Once the freelancer delivers the work, you can mark it as completed.</p>
+              <button class="btn btn-success" id="complete-btn" style="width:100%">Complete Project</button>
+            </div>
+          ` : ''}
         </div>
       </div>
     </div>
@@ -159,6 +166,61 @@ export async function renderJobDetail(app, jobId) {
     });
   });
 
+  // Complete project modal
+  const completeBtn = document.getElementById('complete-btn');
+  if (completeBtn) {
+    completeBtn.addEventListener('click', () => {
+      showModal(`
+        <h2>Complete Project</h2>
+        <p style="margin-bottom: 20px;">Are you sure you want to mark this project as <strong>completed / done</strong>? This will finalize the contract and close the project.</p>
+        <form id="complete-form">
+          <div class="form-group">
+            <label class="form-label" for="feedback">Feedback for Freelancer (Optional)</label>
+            <textarea class="form-textarea" id="feedback" placeholder="Leave some feedback about the freelancer's work..." style="min-height:100px;"></textarea>
+          </div>
+          <div class="modal-actions" style="margin-top:20px;">
+            <button type="button" class="btn btn-secondary" id="cancel-complete">Cancel</button>
+            <button type="submit" class="btn btn-success" id="confirm-complete">Mark as Completed</button>
+          </div>
+        </form>
+      `);
+      document.getElementById('cancel-complete').addEventListener('click', closeModal);
+      document.getElementById('complete-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('confirm-complete');
+        btn.disabled = true;
+        btn.textContent = 'Completing...';
+        try {
+          await api.completeJob(jobId);
+          
+          // Save review to localStorage
+          const feedback = document.getElementById('feedback').value.trim() || 'No feedback left.';
+          const acceptedFreelancerId = localStorage.getItem(`accepted_freelancer_${jobId}`);
+          if (acceptedFreelancerId) {
+            const reviews = JSON.parse(localStorage.getItem('freelancer_reviews') || '[]');
+            reviews.push({
+              freelancerId: acceptedFreelancerId,
+              clientName: user.name || user.email || 'Client',
+              jobTitle: job.title,
+              feedback: feedback,
+              date: new Date().toISOString()
+            });
+            localStorage.setItem('freelancer_reviews', JSON.stringify(reviews));
+          }
+
+          closeModal();
+          showToast('Project completed successfully!', 'success');
+          // Reload page
+          renderJobDetail(app, jobId);
+        } catch (err) {
+          showToast(err.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Mark as Completed';
+        }
+      });
+    });
+  }
+
   // Load applications for job owner
   if (isOwner) {
     const allApps = JSON.parse(localStorage.getItem('global_applications') || '[]');
@@ -180,6 +242,7 @@ export async function renderJobDetail(app, jobId) {
         btn.textContent = 'Accepting...';
         try {
           await api.acceptFreelancer(jobId, appId);
+          localStorage.setItem(`accepted_freelancer_${jobId}`, freelancerId);
           try {
             await api.sendMessage(freelancerId, `You are accepted! Let's discuss the project details for "${escapeHtml(job.title)}".`, jobId);
           } catch(e) {

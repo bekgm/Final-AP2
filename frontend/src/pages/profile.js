@@ -32,6 +32,9 @@ export async function renderProfile(app, targetUserId = null) {
   const bioText = bioParts[0];
   const portfolioLink = bioParts[1] || '';
 
+  const allReviews = JSON.parse(localStorage.getItem('freelancer_reviews') || '[]');
+  const userReviews = allReviews.filter(r => r.freelancerId === uidToFetch);
+
   app.querySelector('.profile-page').innerHTML = `
     <div style="margin-bottom:20px"><a href="#" onclick="history.back(); return false;" class="btn btn-ghost btn-sm">← Back</a></div>
     <div class="profile-header-section">
@@ -47,6 +50,29 @@ export async function renderProfile(app, targetUserId = null) {
     </div>
 
     ${isOwnProfile ? `<button class="btn btn-secondary" id="edit-profile-btn" style="margin-bottom:32px;">✏️ Edit Profile</button>` : ''}
+
+    ${roleName === 'freelancer' ? `
+      <div class="profile-reviews-section" style="margin-top: 32px; margin-bottom: 32px;">
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">Client Reviews ⭐</h2>
+        ${userReviews.length === 0 ? `
+          <p style="color:var(--text-secondary);font-style:italic;">No reviews yet from clients.</p>
+        ` : `
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            ${userReviews.map(r => `
+              <div class="card" style="padding:20px; border: 1px solid var(--border); background: var(--bg-lighter);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="font-weight:600; color:var(--text);">${escapeHtml(r.clientName)}</span>
+                  <span style="font-size:0.8rem; color:var(--text-secondary);">${formatDate(r.date)}</span>
+                </div>
+                <div style="font-size:0.85rem; font-weight:600; color:var(--primary); margin-bottom:8px;">Project: ${escapeHtml(r.jobTitle)}</div>
+                <p style="font-size:0.9rem; color:var(--text); line-height:1.5; font-style:italic;">"${escapeHtml(r.feedback)}"</p>
+                <div style="color:#fbbf24; margin-top:8px;">★★★★★</div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+    ` : ''}
 
     <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">${roleName === 'client' ? 'Posted Jobs' : 'Activity'}</h2>
     <div id="user-jobs">
