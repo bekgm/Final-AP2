@@ -25,6 +25,10 @@ export async function renderProfile(app) {
   if (roleName === '2') roleName = 'freelancer';
   const roleLabel = roleName === 'client' ? 'Client' : 'Freelancer';
 
+  const bioParts = (user.bio || '').split('|PORTFOLIO|');
+  const bioText = bioParts[0];
+  const portfolioLink = bioParts[1] || '';
+
   app.querySelector('.profile-page').innerHTML = `
     <div class="profile-header-section">
       <div class="profile-avatar-large">${getInitials(user.name)}</div>
@@ -32,8 +36,9 @@ export async function renderProfile(app) {
         <div class="profile-name">${escapeHtml(user.name)}</div>
         <div class="profile-email">${escapeHtml(user.email)}</div>
         <span class="badge badge-${roleName}" style="margin-top:6px;">${roleLabel}</span>
-        ${user.bio ? `<div class="profile-bio">${escapeHtml(user.bio)}</div>` : ''}
-        ${user.skills?.length ? `<div class="profile-skills">${user.skills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+        ${bioText ? `<div class="profile-bio">${escapeHtml(bioText)}</div>` : ''}
+        ${roleName === 'freelancer' && portfolioLink ? `<div style="margin-top:10px;"><a href="${escapeHtml(portfolioLink)}" target="_blank" style="color:var(--primary);text-decoration:underline;">🔗 View Portfolio</a></div>` : ''}
+        ${roleName === 'freelancer' && user.skills?.length ? `<div class="profile-skills">${user.skills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
       </div>
     </div>
 
@@ -84,12 +89,18 @@ export async function renderProfile(app) {
         </div>
         <div class="form-group">
           <label class="form-label" for="edit-bio">Bio</label>
-          <textarea class="form-textarea" id="edit-bio" placeholder="Tell us about yourself...">${escapeHtml(user.bio || '')}</textarea>
+          <textarea class="form-textarea" id="edit-bio" placeholder="Tell us about yourself...">${escapeHtml(bioText)}</textarea>
+        </div>
+        ${roleName === 'freelancer' ? `
+        <div class="form-group">
+          <label class="form-label" for="edit-portfolio">Portfolio Link</label>
+          <input class="form-input" id="edit-portfolio" type="url" value="${escapeHtml(portfolioLink)}" placeholder="https://github.com/..." />
         </div>
         <div class="form-group">
           <label class="form-label" for="edit-skills">Skills (comma-separated)</label>
           <input class="form-input" id="edit-skills" value="${(user.skills || []).join(', ')}" placeholder="Go, JavaScript, Docker..." />
         </div>
+        ` : ''}
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" id="cancel-edit">Cancel</button>
           <button type="submit" class="btn btn-primary" id="save-profile">Save Changes</button>
@@ -103,10 +114,14 @@ export async function renderProfile(app) {
       btn.disabled = true;
       btn.textContent = 'Saving...';
       try {
-        const skills = document.getElementById('edit-skills').value.split(',').map(s => s.trim()).filter(Boolean);
+        const skillsInput = document.getElementById('edit-skills');
+        const skills = skillsInput ? skillsInput.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+        const portfolioInput = document.getElementById('edit-portfolio');
+        const finalBio = document.getElementById('edit-bio').value + (portfolioInput && portfolioInput.value ? '|PORTFOLIO|' + portfolioInput.value : '');
+
         await api.updateUser(api.userId, {
           name: document.getElementById('edit-name').value,
-          bio: document.getElementById('edit-bio').value,
+          bio: finalBio,
           skills,
         });
         closeModal();

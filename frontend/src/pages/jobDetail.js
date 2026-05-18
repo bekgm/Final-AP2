@@ -90,13 +90,24 @@ export async function renderJobDetail(app, jobId) {
         btn.disabled = true;
         btn.textContent = 'Submitting...';
         try {
-          await api.applyToJob(jobId, document.getElementById('cover-letter').value);
+          const coverLetter = document.getElementById('cover-letter').value;
+          const resp = await api.applyToJob(jobId, coverLetter);
           
           const applied = JSON.parse(localStorage.getItem(`applied_${user.id}`) || '[]');
           if (!applied.includes(jobId)) {
             applied.push(jobId);
             localStorage.setItem(`applied_${user.id}`, JSON.stringify(applied));
           }
+
+          const globalApps = JSON.parse(localStorage.getItem('global_applications') || '[]');
+          globalApps.push({
+            jobId,
+            applicationId: resp.application?.id || resp.id || '',
+            freelancerId: user.id,
+            freelancerName: user.name,
+            coverLetter: coverLetter
+          });
+          localStorage.setItem('global_applications', JSON.stringify(globalApps));
 
           closeModal();
           showToast('Application submitted!', 'success');
@@ -148,11 +159,60 @@ export async function renderJobDetail(app, jobId) {
     });
   });
 
-  // Load applications for job owner (this is simplified — in real app, would need a list applications endpoint)
+  // Load applications for job owner
   if (isOwner) {
+    const allApps = JSON.parse(localStorage.getItem('global_applications') || '[]');
+    const jobApps = allApps.filter(a => a.jobId === jobId);
+    
+    window.acceptFreelancerMock = (appId, fname, freelancerId) => {
+      showModal(`
+        <h2>Accept Request</h2>
+        <p>Are you sure you want to accept <strong>${escapeHtml(fname)}</strong> for this project?</p>
+        <div class="modal-actions" style="margin-top: 20px;">
+          <button class="btn btn-secondary" id="cancel-accept-btn">Cancel</button>
+          <button class="btn btn-primary" id="confirm-accept-btn">Yes, Accept</button>
+        </div>
+      `);
+      document.getElementById('cancel-accept-btn').addEventListener('click', closeModal);
+      document.getElementById('confirm-accept-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('confirm-accept-btn');
+        btn.disabled = true;
+        btn.textContent = 'Accepting...';
+        try {
+          await api.acceptFreelancer(jobId, appId);
+          try {
+            await api.sendMessage(freelancerId, `You are accepted! Let's discuss the project details for "${escapeHtml(job.title)}".`, jobId);
+          } catch(e) {
+            console.error("Failed to auto-send message:", e);
+          }
+          closeModal();
+          showToast(`Accepted ${fname}! Redirecting to messages...`, 'success');
+          setTimeout(() => router.navigate('/messages'), 1500);
+        } catch (err) {
+          showToast(err.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Yes, Accept';
+        }
+      });
+    };
+
     const section = document.getElementById('applications-section');
     if (section) {
-      section.innerHTML = `<div style="margin-top:20px;"><h3 style="font-weight:700;margin-bottom:12px;font-size:0.95rem;">Applications</h3><p style="color:var(--text-secondary);font-size:0.85rem;">Applications for this job will appear here. Accept a freelancer to start the project.</p></div>`;
+      section.innerHTML = `
+        <div style="margin-top:20px;">
+          <h3 style="font-weight:700;margin-bottom:12px;font-size:0.95rem;">Applications (${jobApps.length})</h3>
+          ${jobApps.length === 0 ? `<p style="color:var(--text-secondary);font-size:0.85rem;">Applications for this job will appear here.</p>` : ''}
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            ${jobApps.map(a => `
+              <div class="card" style="padding:15px; background:var(--bg-lighter); border: 1px solid var(--border);">
+                <div style="font-weight:600;">${escapeHtml(a.freelancerName)}</div>
+                <div style="margin-top:8px; font-size:0.9rem; color:var(--text-secondary);">${escapeHtml(a.coverLetter)}</div>
+                ${jobOpen ? `<button class="btn btn-sm btn-primary" style="margin-top:12px" onclick="acceptFreelancerMock('${a.applicationId}', '${escapeHtml(a.freelancerName)}', '${a.freelancerId}')">Accept Freelancer</button>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
     }
   }
 }

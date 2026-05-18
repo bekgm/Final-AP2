@@ -4,19 +4,23 @@ import { renderNavbar, bindNavbar, showToast, showModal, closeModal, formatBudge
 
 export function renderJobs(app) {
   const user = api.getUser();
-  const isClient = user?.role === 'ROLE_CLIENT' || user?.role === 'client';
+  let roleName = String(user?.role || '').replace('ROLE_', '').toLowerCase();
+  if (roleName === '1') roleName = 'client';
+  const isClient = roleName === 'client';
 
   app.innerHTML = `
     ${renderNavbar()}
     <div class="container">
       <div class="page-header">
-        <h1>Browse Jobs</h1>
-        <p>Discover exciting opportunities and find the perfect match</p>
+        <div>
+          <h1>Browse Jobs</h1>
+          <p>Discover exciting opportunities and find the perfect match</p>
+        </div>
         <div class="page-header-actions">
           <div style="display:flex;gap:8px;flex:1;max-width:400px;">
             <input class="form-input" id="search-input" placeholder="Search jobs..." style="flex:1" />
           </div>
-          ${api.isAuthenticated() ? '<button class="btn btn-primary" id="create-job-btn">+ Post a Job</button>' : ''}
+          ${api.isAuthenticated() && isClient ? '<button class="btn btn-primary" id="create-job-btn">+ Post a Job</button>' : ''}
         </div>
       </div>
       <div id="jobs-container" class="jobs-grid">
@@ -49,7 +53,7 @@ export function renderJobs(app) {
   function renderJobCards(jobs) {
     const container = document.getElementById('jobs-container');
     if (!jobs || jobs.length === 0) {
-      container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📋</div><h3>No jobs found</h3><p>Be the first to post a job opportunity!</p>${api.isAuthenticated() ? '<button class="btn btn-primary" onclick="document.getElementById(\'create-job-btn\')?.click()">Post a Job</button>' : ''}</div>`;
+      container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📋</div><h3>No jobs found</h3><p>Be the first to post a job opportunity!</p>${api.isAuthenticated() && isClient ? '<button class="btn btn-primary" onclick="document.getElementById(\'create-job-btn\')?.click()">Post a Job</button>' : ''}</div>`;
       return;
     }
     container.innerHTML = jobs.map(job => `
