@@ -470,3 +470,68 @@ postgres-messaging-1  | 2026-05-18 21:17:51.446 UTC [54] LOG:  checkpoint comple
 postgres-jobs-1       | 2026-05-18 21:17:53.630 UTC [55] LOG:  checkpoint complete: wrote 114 buffers (0.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=11.446 s, sync=0.013 s, total=11.469 s; sync files=90, longest=0.007 s, average=0.001 s; distance=562 kB, estimate=562 kB; lsn=0/19AB3B8, redo lsn=0/19AB380
 user-service-1        | {"time":"2026-05-18T21:18:43.553399129Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
 [Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:19:43.675285046Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:19:53 +0000] "GET / HTTP/1.1" 200 941 "-" "TelegramBot (like TwitterBot)" "149.154.161.232"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:19:58 +0000] "GET / HTTP/1.1" 200 941 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "46.34.192.58"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:19:59 +0000] "GET /assets/index-7JzGX96j.js HTTP/1.1" 200 29996 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "46.34.192.58"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:19:59 +0000] "GET /assets/index-B9ilbw_K.css HTTP/1.1" 200 14760 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "46.34.192.58"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:20:00 +0000] "GET /vite.svg HTTP/1.1" 200 941 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "46.34.192.58"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:20:13 +0000] "GET / HTTP/1.1" 200 941 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:20:14 +0000] "GET /assets/index-7JzGX96j.js HTTP/1.1" 200 29996 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:20:14 +0000] "GET /assets/index-B9ilbw_K.css HTTP/1.1" 200 14760 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:20:15 +0000] "GET /vite.svg HTTP/1.1" 200 941 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:20:30 +0000] "POST /users/register HTTP/1.1" 503 57 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+user-service-1        | {"time":"2026-05-18T21:20:43.798115129Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+postgres-users-1      | 2026-05-18 21:20:49.056 UTC [58] LOG:  checkpoint starting: time
+postgres-users-1      | 2026-05-18 21:20:53.710 UTC [58] LOG:  checkpoint complete: wrote 48 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.641 s, sync=0.007 s, total=4.654 s; sync files=13, longest=0.005 s, average=0.001 s; distance=260 kB, estimate=260 kB; lsn=0/196BC28, redo lsn=0/196BBF0
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:20:59 +0000] "POST /users/register HTTP/1.1" 503 57 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:21:10 +0000] "GET /jobs?page=1&page_size=12 HTTP/1.1" 200 24 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:21:13 +0000] "GET /vite.svg HTTP/1.1" 304 0 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:21:14 +0000] "POST /users/login HTTP/1.1" 503 57 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+frontend-1            | 192.168.65.1 - - [18/May/2026:21:21:23 +0000] "POST /users/register HTTP/1.1" 503 57 "https://wpyde-46-34-192-58.run.pinggy-free.link/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" "178.89.61.147"
+user-service-1        | {"time":"2026-05-18T21:21:43.936975254Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:45.770880547Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:46.006908672Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:46.309831214Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:46.829239589Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:47.713876923Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:49.429790049Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:52.7444863Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:21:59.267720845Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+user-service-1        | {"time":"2026-05-18T21:22:12.20102567Z","level":"ERROR","msg":"failed to connect to database","error":"ping database: failed to connect to `user=postgres database=userservice`: hostname resolving error: lookup postgres-users on 127.0.0.11:53: no such host"}
+[Kuser-service-1 exited with code 1 (restarting)
+[Kpostgres-users-1 has been recreated
+postgres-users-1      | 2026-05-18 21:22:35.410 UTC [1] LOG:  received fast shutdown request
+postgres-users-1      | 2026-05-18 21:22:35.411 UTC [1] LOG:  aborting any active transactions
+postgres-users-1      | 2026-05-18 21:22:35.414 UTC [1] LOG:  background worker "logical replication launcher" (PID 63) exited with exit code 1
+postgres-users-1      | 2026-05-18 21:22:35.414 UTC [58] LOG:  shutting down
+postgres-users-1      | 2026-05-18 21:22:35.415 UTC [58] LOG:  checkpoint starting: shutdown immediate
+postgres-users-1      | 2026-05-18 21:22:35.419 UTC [58] LOG:  checkpoint complete: wrote 0 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.005 s; sync files=0, longest=0.000 s, average=0.000 s; distance=0 kB, estimate=234 kB; lsn=0/196BCD8, redo lsn=0/196BCD8
+postgres-users-1      | 2026-05-18 21:22:35.421 UTC [1] LOG:  database system is shut down
+[Kpostgres-users-1 exited with code 0
+postgres-users-1      | 
+postgres-users-1      | PostgreSQL Database directory appears to contain a database; Skipping initialization
+postgres-users-1      | 
+postgres-users-1      | 2026-05-18 21:22:35.659 UTC [1] LOG:  starting PostgreSQL 16.13 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+postgres-users-1      | 2026-05-18 21:22:35.659 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres-users-1      | 2026-05-18 21:22:35.659 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres-users-1      | 2026-05-18 21:22:35.661 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres-users-1      | 2026-05-18 21:22:35.664 UTC [28] LOG:  database system was shut down at 2026-05-18 21:22:35 UTC
+postgres-users-1      | 2026-05-18 21:22:35.667 UTC [1] LOG:  database system is ready to accept connections
+job-migrate-1         | no change
+[Kjob-migrate-1 exited with code 0
+user-service-1        | {"time":"2026-05-18T21:22:37.922236085Z","level":"INFO","msg":"connected to database","host":"postgres-users","db":"userservice"}
+user-service-1        | {"time":"2026-05-18T21:22:37.922971626Z","level":"INFO","msg":"gRPC server started","addr":":50051"}
+postgres-jobs-1       | 2026-05-18 21:22:42.739 UTC [55] LOG:  checkpoint starting: time
+postgres-jobs-1       | 2026-05-18 21:22:43.581 UTC [55] LOG:  checkpoint complete: wrote 8 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.831 s, sync=0.003 s, total=0.842 s; sync files=6, longest=0.003 s, average=0.001 s; distance=18 kB, estimate=508 kB; lsn=0/19AFF10, redo lsn=0/19AFED8
