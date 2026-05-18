@@ -78,15 +78,23 @@ export function renderMessages(app) {
         const otherUserId = d.other_user_id || d.otherUserId;
         const lastMsg = d.last_message || d.lastMessage;
         const preview = lastMsg?.content || 'No messages yet';
-        const unread = d.unread_count || d.unreadCount || 0;
+        
+        // Calculate unread using local storage
+        const msgTime = new Date(lastMsg?.timestamp || lastMsg?.created_at || lastMsg?.createdAt || 0).getTime();
+        const readTime = Number(localStorage.getItem(`chat_read_${otherUserId}`) || 0);
+        const isMine = (lastMsg?.sender_id || lastMsg?.senderId) === api.userId;
+        const isUnread = !isMine && msgTime > readTime;
+        
         return `
-          <div class="dialog-item" data-user-id="${otherUserId}">
+          <div class="dialog-item ${isUnread ? 'dialog-item-unread' : ''}" data-user-id="${otherUserId}">
             <div class="dialog-avatar">${getInitials(names[i])}</div>
             <div class="dialog-info">
-              <div class="dialog-name">${escapeHtml(names[i])}</div>
-              <div class="dialog-preview">${escapeHtml(preview)}</div>
+              <div class="dialog-name" style="${isUnread ? 'font-weight: 800; color: var(--text-primary);' : ''}">${escapeHtml(names[i])}</div>
+              <div class="dialog-preview" style="${isUnread ? 'color: var(--text-primary); font-weight: 600;' : ''}">${escapeHtml(preview)}</div>
             </div>
-            ${unread > 0 ? `<div class="dialog-unread">${unread}</div>` : ''}
+            ${isUnread ? `
+              <div class="dialog-unread" style="background:#ef4444; color:white; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:bold; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">+1</div>
+            ` : ''}
           </div>
         `;
       }).join('');

@@ -89,7 +89,7 @@ export function bindNavbar() {
           seenUsers.add(uid);
           
           const lastMsg = d.last_message || d.lastMessage;
-          const msgTime = new Date(lastMsg?.created_at || lastMsg?.createdAt || 0).getTime();
+          const msgTime = new Date(lastMsg?.timestamp || lastMsg?.created_at || lastMsg?.createdAt || 0).getTime();
           const readTime = Number(localStorage.getItem(`chat_read_${uid}`) || 0);
           
           // If the last message is newer than our read time AND we are not the sender
