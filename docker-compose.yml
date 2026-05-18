@@ -1,0 +1,205 @@
+services:
+
+  # ─────────────────────────────────────────────
+  # Shared infrastructure
+  # ─────────────────────────────────────────────
+
+  postgres-users:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: userservice
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_users:/var/lib/postgresql/data
+      - ./user-service/migrations/001_create_users.sql:/docker-entrypoint-initdb.d/001_create_users.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d userservice"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-jobs:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: jobdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_jobs:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jobdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-messaging:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: messaging_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_messaging:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d messaging_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # ─────────────────────────────────────────────
+  # user-service  (gRPC :50051)
+  # ─────────────────────────────────────────────
+
+  user-service:
+    build:
+      context: ./user-service
+    ports:
+      - "50051:50051"
+    environment:
+      GRPC_PORT: "50051"
+      DB_HOST: postgres-users
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: userservice
+      DB_SSLMODE: disable
+      JWT_SECRET: "dev-secret-change-in-production"
+      JWT_EXPIRATION_HOURS: "72"
+    depends_on:
+      postgres-users:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # job-service  (gRPC :50052)
+  # ─────────────────────────────────────────────
+
+  job-migrate:
+    image: migrate/migrate:v4.18.1
+    volumes:
+      - ./job-service/migrations:/migrations:ro
+    command:
+      [
+        "-path", "/migrations",
+        "-database", "postgres://postgres:postgres@postgres-jobs:5432/jobdb?sslmode=disable",
+        "up"
+      ]
+    depends_on:
+      postgres-jobs:
+        condition: service_healthy
+    restart: "no"
+
+  job-service:
+    build:
+      context: ./job-service
+    command: ["./job-service"]
+    ports:
+      - "50052:50052"
+    environment:
+      GRPC_PORT: ":50052"
+      DATABASE_URL: "postgres://postgres:postgres@postgres-jobs:5432/jobdb?sslmode=disable"
+      REDIS_URL: "redis://redis:6379"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      RABBITMQ_EXCHANGE: "jobs"
+      SMTP_HOST: "smtp.gmail.com"
+      SMTP_PORT: "587"
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM: ""
+    depends_on:
+      postgres-jobs:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      job-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # messaging-service  (gRPC :50053)
+  # ─────────────────────────────────────────────
+
+  messaging-service:
+    build:
+      context: ./messaging_service
+    command: ["./messaging-service"]
+    ports:
+      - "50053:50053"
+    environment:
+      PORT: "50053"
+      DATABASE_URL: "host=postgres-messaging user=postgres password=postgres dbname=messaging_db port=5432 sslmode=disable TimeZone=UTC"
+    depends_on:
+      postgres-messaging:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # API Gateways
+  # ─────────────────────────────────────────────
+
+  job-gateway:
+    build:
+      context: ./job-service
+    command: ["./gateway"]
+    ports:
+      - "8080:8080"
+    environment:
+      GATEWAY_HTTP_ADDR: ":8080"
+      JOB_SERVICE_GRPC_ADDR: "job-service:50052"
+      USER_SERVICE_GRPC_ADDR: "user-service:50051"
+      MESSAGING_SERVICE_GRPC_ADDR: "messaging-service:50053"
+    depends_on:
+      job-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      messaging-service:
+        condition: service_started
+    restart: unless-stopped
+
+  messaging-gateway:
+    build:
+      context: ./messaging_service
+    command: ["./messaging-gateway"]
+    ports:
+      - "8081:8081"
+    environment:
+      API_PORT: "8081"
+      GRPC_TARGET: "messaging-service:50053"
+    depends_on:
+      messaging-service:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgdata_users:
+  pgdata_jobs:
+  pgdata_messaging:

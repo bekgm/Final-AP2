@@ -1,0 +1,28 @@
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache git
+
+ENV GOTOOLCHAIN=auto
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o messaging-service ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -o messaging-gateway ./cmd/api_gateway
+
+FROM alpine:3.19
+
+RUN apk add --no-cache ca-certificates tzdata
+
+WORKDIR /app
+
+COPY --from=builder /app/messaging-service .
+COPY --from=builder /app/messaging-gateway .
+
+EXPOSE 50053 8081
+
+CMD ["./messaging-service"]

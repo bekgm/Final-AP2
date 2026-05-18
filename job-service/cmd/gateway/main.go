@@ -15,17 +15,24 @@ import (
 	"google.golang.org/grpc/status"
 
 	pb "github.com/yourname/freelance-platform/job-service/proto/job"
+
+	userpb "github.com/yourname/freelance-platform/job-service/proto/user"
+	msgpb "github.com/yourname/freelance-platform/job-service/proto/messaging"
 )
 
 type gatewayConfig struct {
-	HTTPAddr    string
-	JobGRPCAddr string
+	HTTPAddr            string
+	JobGRPCAddr         string
+	UserGRPCAddr        string
+	MessagingGRPCAddr   string
 }
 
 func loadConfig() gatewayConfig {
 	return gatewayConfig{
-		HTTPAddr:    getEnv("GATEWAY_HTTP_ADDR", ":8080"),
-		JobGRPCAddr: getEnv("JOB_SERVICE_GRPC_ADDR", "127.0.0.1:50052"),
+		HTTPAddr:          getEnv("GATEWAY_HTTP_ADDR", ":8080"),
+		JobGRPCAddr:       getEnv("JOB_SERVICE_GRPC_ADDR", "127.0.0.1:50052"),
+		UserGRPCAddr:      getEnv("USER_SERVICE_GRPC_ADDR", "127.0.0.1:50051"),
+		MessagingGRPCAddr: getEnv("MESSAGING_SERVICE_GRPC_ADDR", "127.0.0.1:50053"),
 	}
 }
 
@@ -149,29 +156,62 @@ func parseIntQuery(r *http.Request, key string, fallback int) (int, error) {
 }
 
 type server struct {
-	job pb.JobServiceClient
+	job       pb.JobServiceClient
+	user      userpb.UserServiceClient
+	messaging msgpb.MessagingServiceClient
+}
+
+func mustDial(addr string) *grpc.ClientConn {
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to dial gRPC (%s): %v", addr, err)
+	}
+	return conn
 }
 
 func main() {
 	cfg := loadConfig()
 
-	conn, err := grpc.NewClient(cfg.JobGRPCAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("failed to dial job-service gRPC (%s): %v", cfg.JobGRPCAddr, err)
-	}
-	defer conn.Close()
+	jobConn := mustDial(cfg.JobGRPCAddr)
+	defer jobConn.Close()
 
-	s := &server{job: pb.NewJobServiceClient(conn)}
+	userConn := mustDial(cfg.UserGRPCAddr)
+	defer userConn.Close()
+
+	msgConn := mustDial(cfg.MessagingGRPCAddr)
+	defer msgConn.Close()
+
+	s := &server{
+		job:       pb.NewJobServiceClient(jobConn),
+		user:      userpb.NewUserServiceClient(userConn),
+		messaging: msgpb.NewMessagingServiceClient(msgConn),
+	}
 
 	mux := http.NewServeMux()
+
+	// Health
 	mux.HandleFunc("GET /healthz", s.handleHealthz)
+
+	// Job routes
 	mux.HandleFunc("POST /jobs", s.handleCreateJob)
 	mux.HandleFunc("GET /jobs/{job_id}", s.handleGetJob)
 	mux.HandleFunc("GET /jobs", s.handleListJobs)
 	mux.HandleFunc("POST /jobs/{job_id}/apply", s.handleApplyToJob)
 	mux.HandleFunc("POST /jobs/{job_id}/accept", s.handleAcceptFreelancer)
 
-	log.Printf("API Gateway listening on %s (job grpc: %s)", cfg.HTTPAddr, cfg.JobGRPCAddr)
+	// User routes
+	mux.HandleFunc("POST /users/register", s.handleRegister)
+	mux.HandleFunc("POST /users/login", s.handleLogin)
+	mux.HandleFunc("GET /users/{user_id}", s.handleGetUser)
+	mux.HandleFunc("PATCH /users/{user_id}", s.handleUpdateUser)
+
+	// Messaging routes
+	mux.HandleFunc("POST /api/messages", s.handleSendMessage)
+	mux.HandleFunc("GET /api/messages", s.handleGetMessages)
+	mux.HandleFunc("GET /api/dialogs", s.handleGetDialogs)
+
+	log.Printf("API Gateway listening on %s | job=%s user=%s messaging=%s",
+		cfg.HTTPAddr, cfg.JobGRPCAddr, cfg.UserGRPCAddr, cfg.MessagingGRPCAddr)
 	if err := http.ListenAndServe(cfg.HTTPAddr, mux); err != nil {
 		log.Fatalf("http server failed: %v", err)
 	}
@@ -346,4 +386,218 @@ func (s *server) handleAcceptFreelancer(w http.ResponseWriter, r *http.Request) 
 		Application: appToDTO(resp.GetApplication()),
 	}
 	writeJSON(w, http.StatusOK, out)
+}
+
+// ── User handlers ────────────────────────────────────────────────────────────
+
+type registerBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
+	Role     string `json:"role"`
+}
+
+func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
+	var body registerBody
+	if err := decodeJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	roleVal := userpb.Role_ROLE_CLIENT
+	if body.Role == "freelancer" {
+		roleVal = userpb.Role_ROLE_FREELANCER
+	}
+
+	resp, err := s.user.Register(ctx, &userpb.RegisterRequest{
+		Email:    body.Email,
+		Password: body.Password,
+		Name:     body.Name,
+		Role:     roleVal,
+	})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+	writeJSON(w, http.StatusCreated, resp)
+}
+
+type loginBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
+	var body loginBody
+	if err := decodeJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := s.user.Login(ctx, &userpb.LoginRequest{
+		Email:    body.Email,
+		Password: body.Password,
+	})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+	writeJSON(w, http.StatusOK, resp)
+}
+
+func (s *server) handleGetUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("user_id")
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "user_id is required")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := s.user.GetUser(ctx, &userpb.GetUserRequest{UserId: userID})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+	writeJSON(w, http.StatusOK, resp.GetUser())
+}
+
+type updateUserBody struct {
+	Name      *string  `json:"name,omitempty"`
+	Bio       *string  `json:"bio,omitempty"`
+	Skills    []string `json:"skills,omitempty"`
+	AvatarURL *string  `json:"avatar_url,omitempty"`
+}
+
+func (s *server) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("user_id")
+	if userID == "" {
+		writeError(w, http.StatusBadRequest, "user_id is required")
+		return
+	}
+	var body updateUserBody
+	if err := decodeJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	req := &userpb.UpdateUserRequest{
+		UserId: userID,
+		Skills: body.Skills,
+	}
+	if body.Name != nil {
+		req.Name = body.Name
+	}
+	if body.Bio != nil {
+		req.Bio = body.Bio
+	}
+	if body.AvatarURL != nil {
+		req.AvatarUrl = body.AvatarURL
+	}
+
+	resp, err := s.user.UpdateUser(ctx, req)
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+	writeJSON(w, http.StatusOK, resp.GetUser())
+}
+
+// ── Messaging handlers ───────────────────────────────────────────────────────
+
+type sendMessageBody struct {
+	ReceiverID string `json:"receiver_id"`
+	ProjectID  string `json:"project_id"`
+	Content    string `json:"content"`
+}
+
+func (s *server) handleSendMessage(w http.ResponseWriter, r *http.Request) {
+	senderID := r.Header.Get("X-User-ID")
+	if senderID == "" {
+		writeError(w, http.StatusUnauthorized, "X-User-ID header is required")
+		return
+	}
+	var body sendMessageBody
+	if err := decodeJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := s.messaging.SendMessage(ctx, &msgpb.SendMessageRequest{
+		SenderId:   senderID,
+		ReceiverId: body.ReceiverID,
+		ProjectId:  body.ProjectID,
+		Content:    body.Content,
+	})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+	writeJSON(w, http.StatusCreated, resp.GetMessage())
+}
+
+func (s *server) handleGetMessages(w http.ResponseWriter, r *http.Request) {
+	userID1 := r.Header.Get("X-User-ID")
+	if userID1 == "" {
+		writeError(w, http.StatusUnauthorized, "X-User-ID header is required")
+		return
+	}
+	userID2 := r.URL.Query().Get("user_id")
+	if userID2 == "" {
+		writeError(w, http.StatusBadRequest, "user_id query param is required")
+		return
+	}
+	projectID := r.URL.Query().Get("project_id")
+	limit, _ := parseIntQuery(r, "limit", 50)
+	offset, _ := parseIntQuery(r, "offset", 0)
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := s.messaging.GetMessages(ctx, &msgpb.GetMessagesRequest{
+		UserId_1:  userID1,
+		UserId_2:  userID2,
+		ProjectId: projectID,
+		Limit:     int32(limit),
+		Offset:    int32(offset),
+	})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+	writeJSON(w, http.StatusOK, resp.GetMessages())
+}
+
+func (s *server) handleGetDialogs(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("X-User-ID")
+	if userID == "" {
+		writeError(w, http.StatusUnauthorized, "X-User-ID header is required")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := s.messaging.GetDialogs(ctx, &msgpb.GetDialogsRequest{
+		UserId: userID,
+	})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+	writeJSON(w, http.StatusOK, resp.GetDialogs())
 }
