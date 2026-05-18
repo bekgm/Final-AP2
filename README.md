@@ -1,6 +1,30 @@
-# Freelance Platform — Microservices Backend
+# Freelance Platform — Go Microservices
 
-A Go-based microservices backend for a freelance marketplace. Three independent gRPC services are unified under a single HTTP API gateway and orchestrated with Docker Compose.
+A backend for a freelance marketplace built with Go microservices. Clients can post jobs, freelancers can apply, and both sides communicate through a messaging system. The project demonstrates microservices architecture with service separation, gRPC inter-service communication, and event-driven behavior via RabbitMQ.
+
+---
+
+## Project Goal
+
+The goal of this project is to build a simple freelance platform where clients and freelancers can interact. Clients can create job postings, freelancers can apply for them, and both sides can communicate through a messaging system.
+
+The main objective is to demonstrate how a microservices architecture can be implemented using the Go programming language, focusing on service separation, inter-service communication, and basic scalability principles.
+
+---
+
+## System Overview
+
+The system consists of three independent microservices, each responsible for a specific domain of the application:
+
+- **User Service** — manages users, authentication, and profiles
+- **Job Service** — handles job listings and applications
+- **Messaging Service** — provides communication between users
+
+Services communicate using:
+- **gRPC** for synchronous communication between services
+- **RabbitMQ** for asynchronous event-driven communication
+
+All external HTTP requests are handled through an **API Gateway**, which serves as the single entry point to the system.
 
 ---
 
@@ -43,6 +67,71 @@ A Go-based microservices backend for a freelance marketplace. Three independent 
 | `postgres-messaging` | 5434 | Messages database |
 | `redis` | 6379 | Caching (job-service) |
 | `rabbitmq` | 5672 / 15672 | Message queue (job notifications) |
+
+---
+
+## Services
+
+### User Service
+
+Responsible for user-related functionality including registration, authentication, and profile management. Authentication is implemented using JWT tokens; passwords are stored hashed.
+
+**Features:** registration, login, profile management, role support (`client` / `freelancer`)
+
+**gRPC methods:** `Register`, `Login`, `GetUser`, `UpdateUser`
+
+**Database:** PostgreSQL — `users` table (id, email, password hash, role, name, created_at)
+
+---
+
+### Job Service
+
+Manages job postings and applications. Clients create jobs, freelancers apply. When a freelancer is accepted, the service **publishes an event to RabbitMQ** (`job.accepted`) so other services can react without direct coupling.
+
+**Features:** create/manage jobs, view listings, apply to jobs, accept a freelancer
+
+**gRPC methods:** `CreateJob`, `GetJob`, `ListJobs`, `ApplyToJob`, `AcceptFreelancer`
+
+**Database:** PostgreSQL — `jobs` table + `applications` table
+
+---
+
+### Messaging Service
+
+Handles communication between clients and freelancers. Stores messages and allows users to view their conversations. Can also consume RabbitMQ events — for example, when a freelancer is accepted, a conversation can be automatically initiated.
+
+**Features:** send messages, retrieve message history, list user dialogs
+
+**gRPC methods:** `SendMessage`, `GetMessages`, `GetDialogs`
+
+**Database:** PostgreSQL — `messages` table (sender_id, receiver_id, content, created_at)
+
+---
+
+## Communication
+
+### gRPC (Synchronous)
+
+All services expose their functionality through gRPC. The API Gateway converts incoming HTTP requests into gRPC calls and forwards them to the appropriate service. This provides efficient, strongly typed, low-latency communication.
+
+### RabbitMQ (Asynchronous / Event-Driven)
+
+RabbitMQ is used for asynchronous communication between services. When an important event occurs — such as a freelancer being accepted for a job — the Job Service publishes a message to the `jobs` exchange. Other services consume these messages and react accordingly without direct dependencies on each other.
+
+```
+Job Service  ──publish──▶  RabbitMQ (jobs exchange)  ──consume──▶  Messaging Service
+                                                                   (auto-create dialog)
+```
+
+---
+
+## API Gateway
+
+The API Gateway (`job-gateway :8080`) is the single entry point for all client HTTP requests. It:
+- Routes requests to the correct gRPC service
+- Validates JWT tokens
+- Converts HTTP → gRPC calls
+- Contains no business logic
 
 ---
 
@@ -359,12 +448,24 @@ job-service/                     ← repo root
 
 ## Tech Stack
 
-- **Go 1.22 / 1.24** — all services
-- **gRPC + Protobuf** — inter-service communication
-- **PostgreSQL 16** — persistent storage (separate DB per service)
-- **Redis 7** — caching
-- **RabbitMQ 3** — async job notifications
-- **Gin** — HTTP framework for messaging gateway
-- **GORM** — ORM for messaging service
-- **JWT** — authentication (user-service)
-- **Docker Compose** — local orchestration
+| Technology | Purpose |
+|---|---|
+| **Go 1.22 / 1.24** | All services |
+| **gRPC + Protobuf** | Inter-service communication |
+| **PostgreSQL 16** | Persistent storage (separate DB per service) |
+| **Redis 7** | Caching (job-service) |
+| **RabbitMQ 3** | Async event-driven communication |
+| **Gin** | HTTP framework for messaging gateway |
+| **GORM** | ORM for messaging service |
+| **JWT** | Authentication (user-service) |
+| **Docker / Docker Compose** | Containerization and local orchestration |
+
+---
+
+## Conclusion
+
+This project demonstrates how a microservices architecture can be implemented in practice using Go. It shows how to separate responsibilities between services, use gRPC for synchronous communication, and implement event-driven behavior with RabbitMQ.
+
+Each service has its own database, its own Dockerfile, and can be developed and scaled independently. The API Gateway acts as a single entry point and keeps the client interface simple regardless of how many services exist internally.
+
+The system is intentionally simple but structured in a way that allows it to be extended with additional features — such as notifications, search, payments, or a frontend — without restructuring the existing services.
