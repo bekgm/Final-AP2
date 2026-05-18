@@ -199,7 +199,22 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  # ─────────────────────────────────────────────
+  # Frontend (Nginx :3000)
+  # ─────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      job-gateway:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   pgdata_users:
   pgdata_jobs:
   pgdata_messaging:
+

@@ -1,0 +1,23 @@
+import './style.css';
+import { router } from './router.js';
+import { initToast } from './components.js';
+import { renderHome } from './pages/home.js';
+import { renderLogin, renderRegister } from './pages/auth.js';
+import { renderJobs } from './pages/jobs.js';
+import { renderJobDetail } from './pages/jobDetail.js';
+import { renderMessages } from './pages/messages.js';
+import { renderProfile } from './pages/profile.js';
+
+const app = document.getElementById('app');
+
+initToast();
+
+router
+  .on('/', () => renderHome(app))
+  .on('/login', () => renderLogin(app))
+  .on('/register', () => renderRegister(app))
+  .on('/jobs', () => renderJobs(app))
+  .on('/jobs/:id', (params) => renderJobDetail(app, params.id))
+  .on('/messages', () => renderMessages(app))
+  .on('/profile', () => renderProfile(app))
+  .start();
