@@ -40,10 +40,6 @@ type Application struct {
 	CreatedAt    time.Time
 }
 
-// ─────────────────────────────────────────────
-// Repository interfaces
-// ─────────────────────────────────────────────
-
 type JobRepository interface {
 	Create(job *Job) error
 	GetByID(id string) (*Job, error)
@@ -59,17 +55,9 @@ type ApplicationRepository interface {
 	AcceptWithTx(applicationID, jobID string) error
 }
 
-// ─────────────────────────────────────────────
-// Event publisher interface
-// ─────────────────────────────────────────────
-
 type EventPublisher interface {
 	PublishJobAccepted(jobID, freelancerID, clientID string) error
 }
-
-// ─────────────────────────────────────────────
-// Email sender interface
-// ─────────────────────────────────────────────
 
 type EmailSender interface {
 	SendApplicationReceived(toEmail, jobTitle, freelancerName string) error

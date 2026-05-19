@@ -9,10 +9,6 @@ import (
 	"github.com/yourname/freelance-platform/job-service/internal/domain"
 )
 
-// ─────────────────────────────────────────────
-// Job Repository
-// ─────────────────────────────────────────────
-
 type JobRepository struct {
 	db *sql.DB
 }
@@ -95,10 +91,6 @@ func (r *JobRepository) UpdateStatus(id string, status domain.JobStatus) error {
 	_, err := r.db.Exec(`UPDATE jobs SET status = $1, updated_at = NOW() WHERE id = $2`, status, id)
 	return err
 }
-
-// ─────────────────────────────────────────────
-// Application Repository
-// ─────────────────────────────────────────────
 
 type ApplicationRepository struct {
 	db *sql.DB

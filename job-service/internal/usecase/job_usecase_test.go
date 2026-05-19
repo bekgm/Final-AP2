@@ -8,10 +8,6 @@ import (
 	"github.com/yourname/freelance-platform/job-service/internal/usecase"
 )
 
-// ─────────────────────────────────────────────
-// Mocks
-// ─────────────────────────────────────────────
-
 type mockJobRepo struct {
 	jobs map[string]*domain.Job
 }
@@ -49,8 +45,6 @@ func (m *mockJobRepo) UpdateStatus(id string, status domain.JobStatus) error {
 	}
 	return errors.New("job not found")
 }
-
-// ─────────────────────────────────────────────
 
 type mockAppRepo struct {
 	apps map[string]*domain.Application
@@ -98,8 +92,6 @@ func (m *mockAppRepo) AcceptWithTx(applicationID, jobID string) error {
 	return errors.New("application not found")
 }
 
-// ─────────────────────────────────────────────
-
 type mockPublisher struct{ published int }
 
 func (m *mockPublisher) PublishJobAccepted(_, _, _ string) error {
@@ -111,10 +103,6 @@ type mockEmail struct{ sent int }
 
 func (m *mockEmail) SendApplicationReceived(_, _, _ string) error { m.sent++; return nil }
 func (m *mockEmail) SendFreelancerAccepted(_, _ string) error     { m.sent++; return nil }
-
-// ─────────────────────────────────────────────
-// Tests
-// ─────────────────────────────────────────────
 
 func newUC() (*usecase.JobUseCase, *mockJobRepo, *mockAppRepo, *mockPublisher, *mockEmail) {
 	jr := newMockJobRepo()

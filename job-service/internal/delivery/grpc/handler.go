@@ -21,8 +21,6 @@ func NewJobHandler(uc *usecase.JobUseCase) *JobHandler {
 	return &JobHandler{uc: uc}
 }
 
-// ── CreateJob ─────────────────────────────────
-
 func (h *JobHandler) CreateJob(ctx context.Context, req *pb.CreateJobRequest) (*pb.CreateJobResponse, error) {
 	job, err := h.uc.CreateJob(req.ClientId, req.Title, req.Description, req.Budget)
 	if err != nil {
@@ -31,8 +29,6 @@ func (h *JobHandler) CreateJob(ctx context.Context, req *pb.CreateJobRequest) (*
 	return &pb.CreateJobResponse{Job: domainJobToProto(job)}, nil
 }
 
-// ── GetJob ────────────────────────────────────
-
 func (h *JobHandler) GetJob(ctx context.Context, req *pb.GetJobRequest) (*pb.GetJobResponse, error) {
 	job, err := h.uc.GetJob(req.JobId)
 	if err != nil {
@@ -40,8 +36,6 @@ func (h *JobHandler) GetJob(ctx context.Context, req *pb.GetJobRequest) (*pb.Get
 	}
 	return &pb.GetJobResponse{Job: domainJobToProto(job)}, nil
 }
-
-// ── ListJobs ──────────────────────────────────
 
 func (h *JobHandler) ListJobs(ctx context.Context, req *pb.ListJobsRequest) (*pb.ListJobsResponse, error) {
 	jobs, total, err := h.uc.ListJobs(int(req.Page), int(req.PageSize), req.ClientId)
@@ -56,8 +50,6 @@ func (h *JobHandler) ListJobs(ctx context.Context, req *pb.ListJobsRequest) (*pb
 	return &pb.ListJobsResponse{Jobs: protoJobs, Total: int32(total)}, nil
 }
 
-// ── ApplyToJob ────────────────────────────────
-
 func (h *JobHandler) ApplyToJob(ctx context.Context, req *pb.ApplyToJobRequest) (*pb.ApplyToJobResponse, error) {
 	app, err := h.uc.ApplyToJob(req.JobId, req.FreelancerId, req.CoverLetter)
 	if err != nil {
@@ -65,8 +57,6 @@ func (h *JobHandler) ApplyToJob(ctx context.Context, req *pb.ApplyToJobRequest) 
 	}
 	return &pb.ApplyToJobResponse{Application: domainAppToProto(app)}, nil
 }
-
-// ── AcceptFreelancer ──────────────────────────
 
 func (h *JobHandler) AcceptFreelancer(ctx context.Context, req *pb.AcceptFreelancerRequest) (*pb.AcceptFreelancerResponse, error) {
 	job, app, err := h.uc.AcceptFreelancer(req.JobId, req.ApplicationId)
@@ -88,10 +78,6 @@ func (h *JobHandler) CompleteJob(ctx context.Context, req *pb.CompleteJobRequest
 		Job: domainJobToProto(job),
 	}, nil
 }
-
-// ─────────────────────────────────────────────
-// Mappers
-// ─────────────────────────────────────────────
 
 func domainJobToProto(j *domain.Job) *pb.Job {
 	var st pb.JobStatus

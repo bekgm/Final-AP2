@@ -10,10 +10,6 @@ import (
 	"github.com/freelance-market/user-service/internal/service"
 )
 
-// ─────────────────────────────────────────────
-// Mock repository
-// ─────────────────────────────────────────────
-
 type mockUserRepo struct {
 	users  map[string]*model.User
 	byEmail map[string]*model.User
@@ -58,20 +54,12 @@ func (m *mockUserRepo) Update(_ context.Context, user *model.User) error {
 	return nil
 }
 
-// ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
-
 func newService() (*service.UserService, *mockUserRepo) {
 	repo := newMockRepo()
 	jwt := auth.NewJWTManager("test-secret", 24)
 	svc := service.NewUserService(repo, jwt)
 	return svc, repo
 }
-
-// ─────────────────────────────────────────────
-// Register tests
-// ─────────────────────────────────────────────
 
 func TestRegister_Success(t *testing.T) {
 	svc, _ := newService()
@@ -134,10 +122,6 @@ func TestRegister_PasswordIsHashed(t *testing.T) {
 	}
 }
 
-// ─────────────────────────────────────────────
-// Login tests
-// ─────────────────────────────────────────────
-
 func TestLogin_Success(t *testing.T) {
 	svc, _ := newService()
 	svc.Register(context.Background(), service.RegisterInput{
@@ -179,10 +163,6 @@ func TestLogin_UserNotFound(t *testing.T) {
 	}
 }
 
-// ─────────────────────────────────────────────
-// GetUser tests
-// ─────────────────────────────────────────────
-
 func TestGetUser_Success(t *testing.T) {
 	svc, _ := newService()
 	result, _ := svc.Register(context.Background(), service.RegisterInput{
@@ -208,10 +188,6 @@ func TestGetUser_NotFound(t *testing.T) {
 		t.Errorf("expected ErrUserNotFound, got %v", err)
 	}
 }
-
-// ─────────────────────────────────────────────
-// UpdateUser tests
-// ─────────────────────────────────────────────
 
 func TestUpdateUser_PartialUpdate(t *testing.T) {
 	svc, _ := newService()
