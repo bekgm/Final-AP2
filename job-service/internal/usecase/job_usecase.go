@@ -136,11 +136,8 @@ func (uc *JobUseCase) AcceptFreelancer(jobID, applicationID string) (*domain.Job
 		return nil, nil, errors.New("application is not pending")
 	}
 
-	// Update statuses (the postgres repo wraps these two in a transaction)
-	if err := uc.appRepo.UpdateStatus(applicationID, domain.ApplicationStatusAccepted); err != nil {
-		return nil, nil, err
-	}
-	if err := uc.jobRepo.UpdateStatus(jobID, domain.JobStatusInProgress); err != nil {
+	// Update both statuses atomically in a single SQL transaction
+	if err := uc.appRepo.AcceptWithTx(applicationID, jobID); err != nil {
 		return nil, nil, err
 	}
 

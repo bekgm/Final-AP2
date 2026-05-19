@@ -8,23 +8,30 @@ import (
 
 	"github.com/freelance-market/user-service/internal/auth"
 	"github.com/freelance-market/user-service/internal/model"
-	"github.com/freelance-market/user-service/internal/repository"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var (
-	ErrInvalidCredentials = errors.New("invalid email or password")
-	ErrUserNotFound       = errors.New("user not found")
-	ErrEmailTaken         = errors.New("email already taken")
+	ErrInvalidCredentials  = errors.New("invalid email or password")
+	ErrUserNotFound        = errors.New("user not found")
+	ErrEmailTaken          = errors.New("email already taken")
+	ErrEmailAlreadyExists  = errors.New("email already exists")
 )
 
+type UserRepo interface {
+	Create(ctx context.Context, user *model.User) error
+	GetByID(ctx context.Context, id string) (*model.User, error)
+	GetByEmail(ctx context.Context, email string) (*model.User, error)
+	Update(ctx context.Context, user *model.User) error
+}
+
 type UserService struct {
-	repo       *repository.UserRepository
+	repo       UserRepo
 	jwtManager *auth.JWTManager
 }
 
-func NewUserService(repo *repository.UserRepository, jwtManager *auth.JWTManager) *UserService {
+func NewUserService(repo UserRepo, jwtManager *auth.JWTManager) *UserService {
 	return &UserService{
 		repo:       repo,
 		jwtManager: jwtManager,
@@ -65,7 +72,7 @@ func (s *UserService) Register(ctx context.Context, input RegisterInput) (*AuthR
 	}
 
 	if err := s.repo.Create(ctx, user); err != nil {
-		if errors.Is(err, repository.ErrEmailAlreadyExists) {
+		if errors.Is(err, ErrEmailAlreadyExists) || err.Error() == "email already exists" {
 			return nil, ErrEmailTaken
 		}
 		return nil, fmt.Errorf("create user: %w", err)
@@ -82,7 +89,7 @@ func (s *UserService) Register(ctx context.Context, input RegisterInput) (*AuthR
 func (s *UserService) Login(ctx context.Context, email, password string) (*AuthResult, error) {
 	user, err := s.repo.GetByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
+		if err.Error() == "user not found" || errors.Is(err, ErrUserNotFound) {
 			return nil, ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("get user: %w", err)
@@ -103,7 +110,7 @@ func (s *UserService) Login(ctx context.Context, email, password string) (*AuthR
 func (s *UserService) GetUser(ctx context.Context, userID string) (*model.User, error) {
 	user, err := s.repo.GetByID(ctx, userID)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
+		if err.Error() == "user not found" || errors.Is(err, ErrUserNotFound) {
 			return nil, ErrUserNotFound
 		}
 		return nil, fmt.Errorf("get user: %w", err)
@@ -122,7 +129,7 @@ type UpdateInput struct {
 func (s *UserService) UpdateUser(ctx context.Context, input UpdateInput) (*model.User, error) {
 	user, err := s.repo.GetByID(ctx, input.UserID)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
+		if err.Error() == "user not found" || errors.Is(err, ErrUserNotFound) {
 			return nil, ErrUserNotFound
 		}
 		return nil, fmt.Errorf("get user: %w", err)

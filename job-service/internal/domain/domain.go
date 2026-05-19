@@ -56,6 +56,7 @@ type ApplicationRepository interface {
 	GetByID(id string) (*Application, error)
 	ListByJob(jobID string) ([]*Application, error)
 	UpdateStatus(id string, status ApplicationStatus) error
+	AcceptWithTx(applicationID, jobID string) error
 }
 
 // ─────────────────────────────────────────────

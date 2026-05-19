@@ -157,7 +157,12 @@ func (r *ApplicationRepository) UpdateStatus(id string, status domain.Applicatio
 	return err
 }
 
-// AcceptWithTransaction atomically accepts one application and closes the job.
+// AcceptWithTx satisfies domain.ApplicationRepository and runs atomically.
+func (r *ApplicationRepository) AcceptWithTx(applicationID, jobID string) error {
+	return AcceptWithTransaction(r.db, applicationID, jobID)
+}
+
+// AcceptWithTransaction atomically accepts one application and sets the job to in_progress.
 func AcceptWithTransaction(db *sql.DB, applicationID string, jobID string) error {
 	tx, err := db.Begin()
 	if err != nil {

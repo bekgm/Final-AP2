@@ -90,6 +90,14 @@ func (m *mockAppRepo) UpdateStatus(id string, status domain.ApplicationStatus) e
 	return errors.New("application not found")
 }
 
+func (m *mockAppRepo) AcceptWithTx(applicationID, jobID string) error {
+	if a, ok := m.apps[applicationID]; ok {
+		a.Status = domain.ApplicationStatusAccepted
+		return nil
+	}
+	return errors.New("application not found")
+}
+
 // ─────────────────────────────────────────────
 
 type mockPublisher struct{ published int }
