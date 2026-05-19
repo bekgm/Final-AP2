@@ -156,3 +156,22 @@ func (uc *JobUseCase) AcceptFreelancer(jobID, applicationID string) (*domain.Job
 
 	return job, app, nil
 }
+
+// ── CompleteJob ────────────────────────────────
+
+func (uc *JobUseCase) CompleteJob(jobID string) (*domain.Job, error) {
+	job, err := uc.jobRepo.GetByID(jobID)
+	if err != nil {
+		return nil, err
+	}
+	if job.Status != domain.JobStatusInProgress {
+		return nil, errors.New("job must be in progress to be completed")
+	}
+
+	if err := uc.jobRepo.UpdateStatus(jobID, domain.JobStatusClosed); err != nil {
+		return nil, err
+	}
+
+	job.Status = domain.JobStatusClosed
+	return job, nil
+}

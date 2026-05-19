@@ -48,7 +48,10 @@ export function renderNavbar() {
     <div class="navbar-links">
       <a href="#/jobs" class="${isActiveRoute('/jobs')}">Browse Jobs</a>
       ${isAuth ? `
-        <a href="#/messages" class="${isActiveRoute('/messages')}">Messages</a>
+        <a href="#/messages" class="${isActiveRoute('/messages')}" id="nav-messages-link" style="display:flex;align-items:center;">
+          Messages
+          <span id="nav-unread-badge" style="display:none; background:#ef4444; color:white; font-size:0.7rem; font-weight:bold; border-radius:9999px; padding:2px 6px; margin-left:6px; line-height:1;">0</span>
+        </a>
         <a href="#/profile" class="${isActiveRoute('/profile')}"><span class="hide-mobile">👤 </span>${user?.name || 'Profile'}</a>
         <button id="logout-btn" class="btn btn-ghost btn-sm">Logout</button>
       ` : `
@@ -72,6 +75,38 @@ export function bindNavbar() {
       showToast('Logged out successfully', 'info');
       router.navigate('/');
     });
+  }
+
+  if (api.isAuthenticated()) {
+    api.getDialogs().then(dialogs => {
+      if (!dialogs) return;
+      let totalUnread = 0;
+      const seenUsers = new Set();
+      // Calculate unread using local storage since backend doesn't support it yet
+      for (const d of dialogs) {
+        const uid = d.other_user_id || d.otherUserId;
+        if (!seenUsers.has(uid)) {
+          seenUsers.add(uid);
+          
+          const lastMsg = d.last_message || d.lastMessage;
+          const msgTime = new Date(lastMsg?.timestamp || lastMsg?.created_at || lastMsg?.createdAt || 0).getTime();
+          const readTime = Number(localStorage.getItem(`chat_read_${uid}`) || 0);
+          
+          // If the last message is newer than our read time AND we are not the sender
+          const senderId = lastMsg?.sender_id || lastMsg?.senderId;
+          if (senderId !== api.userId && msgTime > readTime) {
+             totalUnread += 1;
+          }
+        }
+      }
+      const badge = document.getElementById('nav-unread-badge');
+      if (badge && totalUnread > 0) {
+        badge.textContent = totalUnread > 9 ? '9+' : totalUnread;
+        badge.style.display = 'inline-block';
+      } else if (badge) {
+        badge.style.display = 'none';
+      }
+    }).catch(e => console.error("Failed to load unread count", e));
   }
 }
 

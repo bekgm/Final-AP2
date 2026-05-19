@@ -117,6 +117,12 @@ class ApiClient {
     });
   }
 
+  async completeJob(jobId) {
+    return this.request(`${API_BASE}/jobs/${jobId}/complete`, {
+      method: 'POST',
+    });
+  }
+
   // Messaging
   async sendMessage(receiverId, content, projectId = '') {
     return this.request(`${MSG_BASE}/api/messages`, {

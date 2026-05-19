@@ -55,21 +55,46 @@ export function renderMessages(app) {
         return;
       }
 
-      const names = await Promise.all(dialogs.map(d => getUserName(d.other_user_id || d.otherUserId)));
+      // Merge dialogs by otherUserId
+      const uniqueDialogs = new Map();
+      for (const d of dialogs) {
+        const otherId = d.other_user_id || d.otherUserId;
+        const msgTime = new Date(d.last_message?.created_at || d.lastMessage?.createdAt || 0).getTime();
+        
+        if (!uniqueDialogs.has(otherId)) {
+          uniqueDialogs.set(otherId, { ...d, time: msgTime });
+        } else {
+          const existing = uniqueDialogs.get(otherId);
+          if (msgTime > existing.time) {
+            uniqueDialogs.set(otherId, { ...d, time: msgTime });
+          }
+        }
+      }
+      const mergedDialogs = Array.from(uniqueDialogs.values()).sort((a, b) => b.time - a.time);
 
-      list.innerHTML = dialogs.map((d, i) => {
+      const names = await Promise.all(mergedDialogs.map(d => getUserName(d.other_user_id || d.otherUserId)));
+
+      list.innerHTML = mergedDialogs.map((d, i) => {
         const otherUserId = d.other_user_id || d.otherUserId;
         const lastMsg = d.last_message || d.lastMessage;
         const preview = lastMsg?.content || 'No messages yet';
-        const unread = d.unread_count || d.unreadCount || 0;
+        
+        // Calculate unread using local storage
+        const msgTime = new Date(lastMsg?.timestamp || lastMsg?.created_at || lastMsg?.createdAt || 0).getTime();
+        const readTime = Number(localStorage.getItem(`chat_read_${otherUserId}`) || 0);
+        const isMine = (lastMsg?.sender_id || lastMsg?.senderId) === api.userId;
+        const isUnread = !isMine && msgTime > readTime;
+        
         return `
-          <div class="dialog-item" data-user-id="${otherUserId}" data-project-id="${d.project_id || d.projectId || ''}">
+          <div class="dialog-item ${isUnread ? 'dialog-item-unread' : ''}" data-user-id="${otherUserId}">
             <div class="dialog-avatar">${getInitials(names[i])}</div>
             <div class="dialog-info">
-              <div class="dialog-name">${escapeHtml(names[i])}</div>
-              <div class="dialog-preview">${escapeHtml(preview)}</div>
+              <div class="dialog-name" style="${isUnread ? 'font-weight: 800; color: var(--text-primary);' : ''}">${escapeHtml(names[i])}</div>
+              <div class="dialog-preview" style="${isUnread ? 'color: var(--text-primary); font-weight: 600;' : ''}">${escapeHtml(preview)}</div>
             </div>
-            ${unread > 0 ? `<div class="dialog-unread">${unread}</div>` : ''}
+            ${isUnread ? `
+              <div class="dialog-unread" style="background:#ef4444; color:white; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:bold; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">+1</div>
+            ` : ''}
           </div>
         `;
       }).join('');
@@ -78,7 +103,7 @@ export function renderMessages(app) {
         item.addEventListener('click', () => {
           list.querySelectorAll('.dialog-item').forEach(i => i.classList.remove('active'));
           item.classList.add('active');
-          openChat(item.dataset.userId, item.dataset.projectId);
+          openChat(item.dataset.userId);
         });
       });
     } catch (err) {
@@ -86,15 +111,18 @@ export function renderMessages(app) {
     }
   }
 
-  async function openChat(otherUserId, projectId) {
-    activeDialog = { otherUserId, projectId };
+  async function openChat(otherUserId) {
+    activeDialog = { otherUserId, projectId: '' };
+    localStorage.setItem(`chat_read_${otherUserId}`, Date.now());
+    bindNavbar(); // update the badge
+    
     const chatArea = document.getElementById('chat-area');
     const name = await getUserName(otherUserId);
 
     chatArea.innerHTML = `
       <div class="chat-header">
-        <div class="dialog-avatar" style="width:36px;height:36px;font-size:0.85rem;">${getInitials(name)}</div>
-        <div class="chat-header-name">${escapeHtml(name)}</div>
+        <a href="#/profile/${otherUserId}" class="dialog-avatar" style="width:36px;height:36px;font-size:0.85rem;text-decoration:none;color:inherit;cursor:pointer;">${getInitials(name)}</a>
+        <a href="#/profile/${otherUserId}" class="chat-header-name" style="text-decoration:none;color:inherit;cursor:pointer;">${escapeHtml(name)}</a>
       </div>
       <div class="chat-messages" id="chat-messages">
         <div class="loading-center"><div class="spinner"></div></div>
@@ -105,7 +133,7 @@ export function renderMessages(app) {
       </div>
     `;
 
-    await loadMessages(otherUserId, projectId);
+    await loadMessages(otherUserId, '');
 
     const sendMsg = async () => {
       const input = document.getElementById('msg-input');
@@ -113,8 +141,8 @@ export function renderMessages(app) {
       if (!text) return;
       input.value = '';
       try {
-        await api.sendMessage(otherUserId, text, projectId || '');
-        await loadMessages(otherUserId, projectId);
+        await api.sendMessage(otherUserId, text, '');
+        await loadMessages(otherUserId, '');
       } catch (err) {
         showToast(err.message, 'error');
       }
@@ -135,7 +163,8 @@ export function renderMessages(app) {
         return;
       }
       const myId = api.userId;
-      container.innerHTML = messages.map(m => {
+      const reversed = [...messages].reverse();
+      container.innerHTML = reversed.map(m => {
         const senderId = m.sender_id || m.senderId;
         const isMine = senderId === myId;
         const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -153,6 +182,20 @@ export function renderMessages(app) {
   }
 
   loadDialogs();
+
+  const pollInterval = setInterval(() => {
+    const dialogsListEl = document.getElementById('dialogs-list');
+    if (!dialogsListEl) {
+      clearInterval(pollInterval);
+      return;
+    }
+    loadDialogs();
+    if (activeDialog) {
+      loadMessages(activeDialog.otherUserId, activeDialog.projectId);
+      localStorage.setItem(`chat_read_${activeDialog.otherUserId}`, Date.now());
+      bindNavbar();
+    }
+  }, 3000);
 }
 
 function escapeHtml(str) {

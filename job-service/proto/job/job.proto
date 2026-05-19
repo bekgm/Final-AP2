@@ -104,6 +104,24 @@ message AcceptFreelancerResponse {
   Application application = 2;
 }
 
+// ListApplications
+
+message ListApplicationsRequest {
+  string job_id = 1;
+}
+
+message ListApplicationsResponse {
+  repeated Application applications = 1;
+}
+
+message CompleteJobRequest {
+  string job_id = 1;
+}
+
+message CompleteJobResponse {
+  Job job = 1;
+}
+
 // Service 
 service JobService {
   rpc CreateJob        (CreateJobRequest)        returns (CreateJobResponse);
@@ -111,4 +129,6 @@ service JobService {
   rpc ListJobs         (ListJobsRequest)         returns (ListJobsResponse);
   rpc ApplyToJob       (ApplyToJobRequest)       returns (ApplyToJobResponse);
   rpc AcceptFreelancer (AcceptFreelancerRequest) returns (AcceptFreelancerResponse);
+  rpc ListApplications (ListApplicationsRequest) returns (ListApplicationsResponse);
+  rpc CompleteJob      (CompleteJobRequest)      returns (CompleteJobResponse);
 }

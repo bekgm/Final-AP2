@@ -198,6 +198,7 @@ func main() {
 	mux.HandleFunc("GET /jobs", s.handleListJobs)
 	mux.HandleFunc("POST /jobs/{job_id}/apply", s.handleApplyToJob)
 	mux.HandleFunc("POST /jobs/{job_id}/accept", s.handleAcceptFreelancer)
+	mux.HandleFunc("POST /jobs/{job_id}/complete", s.handleCompleteJob)
 
 	// User routes
 	mux.HandleFunc("POST /users/register", s.handleRegister)
@@ -386,6 +387,28 @@ func (s *server) handleAcceptFreelancer(w http.ResponseWriter, r *http.Request) 
 		Application: appToDTO(resp.GetApplication()),
 	}
 	writeJSON(w, http.StatusOK, out)
+}
+
+func (s *server) handleCompleteJob(w http.ResponseWriter, r *http.Request) {
+	jobID := r.PathValue("job_id")
+	if jobID == "" {
+		writeError(w, http.StatusBadRequest, "job_id is required")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	resp, err := s.job.CompleteJob(ctx, &pb.CompleteJobRequest{
+		JobId: jobID,
+	})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, jobToDTO(resp.GetJob()))
 }
 
 // ── User handlers ────────────────────────────────────────────────────────────

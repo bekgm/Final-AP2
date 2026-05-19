@@ -4,14 +4,18 @@ import { renderNavbar, bindNavbar, showToast, showModal, closeModal, formatBudge
 
 export function renderJobs(app) {
   const user = api.getUser();
-  const isClient = user?.role === 'ROLE_CLIENT' || user?.role === 'client';
+  let roleName = String(user?.role || '').replace('ROLE_', '').toLowerCase();
+  if (roleName === '1') roleName = 'client';
+  const isClient = roleName === 'client';
 
   app.innerHTML = `
     ${renderNavbar()}
     <div class="container">
       <div class="page-header">
-        <h1>Browse Jobs</h1>
-        <p>Discover exciting opportunities and find the perfect match</p>
+        <div>
+          <h1>Browse Jobs</h1>
+          <p>Discover exciting opportunities and find the perfect match</p>
+        </div>
         <div class="page-header-actions">
           <div style="display:flex;gap:8px;flex:1;max-width:400px;">
             <input class="form-input" id="search-input" placeholder="Search jobs..." style="flex:1" />
