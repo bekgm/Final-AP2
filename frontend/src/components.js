@@ -1,7 +1,6 @@
 import { api } from './api.js';
 import { router } from './router.js';
 
-// ── Toast ────────────────────────────────────────
 let toastContainer;
 export function initToast() {
   toastContainer = document.createElement('div');
@@ -16,7 +15,6 @@ export function showToast(message, type = 'info') {
   setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
 }
 
-// ── Helpers ──────────────────────────────────────
 export function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
@@ -38,7 +36,6 @@ export function getInitials(name) {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
-// ── Navbar ───────────────────────────────────────
 export function renderNavbar() {
   const user = api.getUser();
   const isAuth = api.isAuthenticated();
@@ -110,7 +107,6 @@ export function bindNavbar() {
   }
 }
 
-// ── Modal ────────────────────────────────────────
 export function showModal(content) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';

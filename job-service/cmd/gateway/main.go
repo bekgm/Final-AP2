@@ -411,7 +411,6 @@ func (s *server) handleCompleteJob(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, jobToDTO(resp.GetJob()))
 }
 
-// ── User handlers ────────────────────────────────────────────────────────────
 
 type registerBody struct {
 	Email    string `json:"email"`
@@ -536,7 +535,6 @@ func (s *server) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp.GetUser())
 }
 
-// ── Messaging handlers ───────────────────────────────────────────────────────
 
 type sendMessageBody struct {
 	ReceiverID string `json:"receiver_id"`

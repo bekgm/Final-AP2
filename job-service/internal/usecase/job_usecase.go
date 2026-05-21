@@ -29,8 +29,6 @@ func NewJobUseCase(
 	}
 }
 
-// ── CreateJob ─────────────────────────────────
-
 func (uc *JobUseCase) CreateJob(clientID, title, description string, budget float64) (*domain.Job, error) {
 	if title == "" {
 		return nil, errors.New("title is required")
@@ -56,16 +54,12 @@ func (uc *JobUseCase) CreateJob(clientID, title, description string, budget floa
 	return job, nil
 }
 
-// ── GetJob ────────────────────────────────────
-
 func (uc *JobUseCase) GetJob(jobID string) (*domain.Job, error) {
 	if jobID == "" {
 		return nil, errors.New("job_id is required")
 	}
 	return uc.jobRepo.GetByID(jobID)
 }
-
-// ── ListJobs ──────────────────────────────────
 
 func (uc *JobUseCase) ListJobs(page, pageSize int, clientID string) ([]*domain.Job, int, error) {
 	if page < 1 {
@@ -76,8 +70,6 @@ func (uc *JobUseCase) ListJobs(page, pageSize int, clientID string) ([]*domain.J
 	}
 	return uc.jobRepo.List(page, pageSize, clientID)
 }
-
-// ── ApplyToJob ────────────────────────────────
 
 func (uc *JobUseCase) ApplyToJob(jobID, freelancerID, coverLetter string) (*domain.Application, error) {
 	job, err := uc.jobRepo.GetByID(jobID)
@@ -108,8 +100,6 @@ func (uc *JobUseCase) ApplyToJob(jobID, freelancerID, coverLetter string) (*doma
 
 	return app, nil
 }
-
-// ── AcceptFreelancer ──────────────────────────
 
 // AcceptFreelancer runs atomically via the repository transaction:
 // 1. Mark application as accepted
@@ -156,8 +146,6 @@ func (uc *JobUseCase) AcceptFreelancer(jobID, applicationID string) (*domain.Job
 
 	return job, app, nil
 }
-
-// ── CompleteJob ────────────────────────────────
 
 func (uc *JobUseCase) CompleteJob(jobID string) (*domain.Job, error) {
 	job, err := uc.jobRepo.GetByID(jobID)

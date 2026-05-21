@@ -1,8 +1,6 @@
 services:
 
-  # ─────────────────────────────────────────────
   # Shared infrastructure
-  # ─────────────────────────────────────────────
 
   postgres-users:
     image: postgres:16-alpine
@@ -68,9 +66,83 @@ services:
       timeout: 5s
       retries: 20
 
-  # ─────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.3.2
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/tmp/loki
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.3.2
+    volumes:
+      - ./observability/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: ["-config.file=/etc/promtail/config.yml"]
+    depends_on:
+      loki:
+        condition: service_started
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./observability/tempo-config.yml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.51.0
+    ports:
+      - "8082:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+    restart: unless-stopped
+
   # user-service  (gRPC :50051)
-  # ─────────────────────────────────────────────
 
   user-service:
     build:
@@ -92,9 +164,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # ─────────────────────────────────────────────
   # job-service  (gRPC :50052)
-  # ─────────────────────────────────────────────
 
   job-migrate:
     image: migrate/migrate:v4.18.1
@@ -139,9 +209,7 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
 
-  # ─────────────────────────────────────────────
   # messaging-service  (gRPC :50053)
-  # ─────────────────────────────────────────────
 
   messaging-service:
     build:
@@ -157,9 +225,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # ─────────────────────────────────────────────
   # API Gateways
-  # ─────────────────────────────────────────────
 
   job-gateway:
     build:
@@ -195,9 +261,7 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  # ─────────────────────────────────────────────
   # Frontend (Nginx :3000)
-  # ─────────────────────────────────────────────
 
   frontend:
     build:
@@ -213,4 +277,8 @@ volumes:
   pgdata_users:
   pgdata_jobs:
   pgdata_messaging:
+  prometheus_data:
+  loki_data:
+  tempo_data:
+  grafana_data:
 

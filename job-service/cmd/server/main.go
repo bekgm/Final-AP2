@@ -24,7 +24,6 @@ import (
 func main() {
 	cfg := config.Load()
 
-	// ── PostgreSQL ──────────────────────────────
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect to postgres: %v", err)
@@ -49,34 +48,28 @@ func main() {
 		log.Fatalf("postgres ping failed after %d attempts: %v", cfg.PostgresPingRetries, pingErr)
 	}
 
-	// ── Redis ───────────────────────────────────
 	opt, err := redis.ParseURL(cfg.RedisURL)
 	if err != nil {
 		log.Fatalf("failed to parse redis URL: %v", err)
 	}
 	_ = redis.NewClient(opt) // cache client — passed to repo layer as needed
 
-	// ── RabbitMQ ────────────────────────────────
 	publisher, err := messaging.NewPublisher(cfg.RabbitMQURL, cfg.RabbitMQExchange)
 	if err != nil {
 		log.Fatalf("failed to connect to RabbitMQ: %v", err)
 	}
 	defer publisher.Close()
 
-	// ── Email ───────────────────────────────────
 	emailSender := email.NewSMTPSender(
 		cfg.SMTPHost, cfg.SMTPPort,
 		cfg.SMTPUsername, cfg.SMTPPassword, cfg.SMTPFrom,
 	)
 
-	// ── Repositories ────────────────────────────
 	jobRepo := pgRepo.NewJobRepository(db)
 	appRepo := pgRepo.NewApplicationRepository(db)
 
-	// ── Use Case ────────────────────────────────
 	jobUC := usecase.NewJobUseCase(jobRepo, appRepo, publisher, emailSender)
 
-	// ── gRPC Server ─────────────────────────────
 	lis, err := net.Listen("tcp", cfg.GRPCPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
