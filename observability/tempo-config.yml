@@ -13,11 +13,5 @@ distributor:
 storage:
   trace:
     backend: local
-    wal:
-      path: /tmp/tempo/wal
     local:
-      path: /tmp/tempo/blocks
-
-metrics_generator:
-  storage:
-    path: /tmp/tempo/generator/wal
+      path: /var/tempo
