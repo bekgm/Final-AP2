@@ -1,4 +1,4 @@
-module github.com/yourname/freelance-platform/job-service
+module github.com/bekgm/Final-AP2/job-service
 
 go 1.22.7
 

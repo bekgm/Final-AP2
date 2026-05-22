@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yourname/freelance-platform/job-service/internal/domain"
-	"github.com/yourname/freelance-platform/job-service/internal/usecase"
+	"github.com/bekgm/Final-AP2/job-service/internal/domain"
+	"github.com/bekgm/Final-AP2/job-service/internal/usecase"
 )
 
 type mockJobRepo struct {

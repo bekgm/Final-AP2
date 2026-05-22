@@ -7,9 +7,9 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/yourname/freelance-platform/job-service/internal/domain"
-	"github.com/yourname/freelance-platform/job-service/internal/usecase"
-	pb "github.com/yourname/freelance-platform/job-service/proto/job"
+	"github.com/bekgm/Final-AP2/job-service/internal/domain"
+	"github.com/bekgm/Final-AP2/job-service/internal/usecase"
+	pb "github.com/bekgm/Final-AP2/job-service/proto/job"
 )
 
 type JobHandler struct {

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/yourname/freelance-platform/job-service/internal/domain"
+	"github.com/bekgm/Final-AP2/job-service/internal/domain"
 )
 
 type JobUseCase struct {

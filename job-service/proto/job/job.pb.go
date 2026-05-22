@@ -1087,7 +1087,7 @@ const file_proto_job_job_proto_rawDesc = "" +
 	"ApplyToJob\x12\x16.job.ApplyToJobRequest\x1a\x17.job.ApplyToJobResponse\x12O\n" +
 	"\x10AcceptFreelancer\x12\x1c.job.AcceptFreelancerRequest\x1a\x1d.job.AcceptFreelancerResponse\x12O\n" +
 	"\x10ListApplications\x12\x1c.job.ListApplicationsRequest\x1a\x1d.job.ListApplicationsResponse\x12@\n" +
-	"\vCompleteJob\x12\x17.job.CompleteJobRequest\x1a\x18.job.CompleteJobResponseB>Z<github.com/yourname/freelance-platform/job-service/proto/jobb\x06proto3"
+	"\vCompleteJob\x12\x17.job.CompleteJobRequest\x1a\x18.job.CompleteJobResponseB>Z<github.com/bekgm/Final-AP2/job-service/proto/jobb\x06proto3"
 
 var (
 	file_proto_job_job_proto_rawDescOnce sync.Once

@@ -14,10 +14,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	pb "github.com/yourname/freelance-platform/job-service/proto/job"
+	pb "github.com/bekgm/Final-AP2/job-service/proto/job"
 
-	userpb "github.com/yourname/freelance-platform/job-service/proto/user"
-	msgpb "github.com/yourname/freelance-platform/job-service/proto/messaging"
+	userpb "github.com/bekgm/Final-AP2/job-service/proto/user"
+	msgpb "github.com/bekgm/Final-AP2/job-service/proto/messaging"
 )
 
 type gatewayConfig struct {
@@ -481,6 +481,44 @@ type loginBody struct {
 	Password string `json:"password"`
 }
 
+type userDTO struct {
+	ID         string   `json:"id"`
+	Email      string   `json:"email"`
+	Name       string   `json:"name"`
+	Role       string   `json:"role"`
+	Bio        string   `json:"bio"`
+	Skills     []string `json:"skills"`
+	AvatarURL  string   `json:"avatar_url"`
+	CreatedAt  string   `json:"created_at"`
+	UpdatedAt  string   `json:"updated_at"`
+}
+
+type loginResponseDTO struct {
+	Token string  `json:"token"`
+	User  userDTO `json:"user"`
+}
+
+func userProtoToDTO(u *userpb.User) userDTO {
+	role := "unknown"
+	switch u.GetRole() {
+	case userpb.Role_ROLE_CLIENT:
+		role = "client"
+	case userpb.Role_ROLE_FREELANCER:
+		role = "freelancer"
+	}
+	return userDTO{
+		ID:        u.GetId(),
+		Email:     u.GetEmail(),
+		Name:      u.GetName(),
+		Role:      role,
+		Bio:       u.GetBio(),
+		Skills:    u.GetSkills(),
+		AvatarURL: u.GetAvatarUrl(),
+		CreatedAt: u.GetCreatedAt(),
+		UpdatedAt: u.GetUpdatedAt(),
+	}
+}
+
 func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	var body loginBody
 	if err := decodeJSON(r, &body); err != nil {
@@ -499,7 +537,12 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		writeError(w, code, msg)
 		return
 	}
-	writeJSON(w, http.StatusOK, resp)
+
+	dto := loginResponseDTO{
+		Token: resp.GetToken(),
+		User:  userProtoToDTO(resp.GetUser()),
+	}
+	writeJSON(w, http.StatusOK, dto)
 }
 
 func (s *server) handleGetUser(w http.ResponseWriter, r *http.Request) {

@@ -9,11 +9,11 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/yourname/freelance-platform/job-service/internal/domain"
-	"github.com/yourname/freelance-platform/job-service/internal/email"
-	"github.com/yourname/freelance-platform/job-service/internal/messaging"
-	pgRepo "github.com/yourname/freelance-platform/job-service/internal/repository/postgres"
-	"github.com/yourname/freelance-platform/job-service/internal/usecase"
+	"github.com/bekgm/Final-AP2/job-service/internal/domain"
+	"github.com/bekgm/Final-AP2/job-service/internal/email"
+	"github.com/bekgm/Final-AP2/job-service/internal/messaging"
+	pgRepo "github.com/bekgm/Final-AP2/job-service/internal/repository/postgres"
+	"github.com/bekgm/Final-AP2/job-service/internal/usecase"
 )
 
 // Integration test setup - requires running PostgreSQL

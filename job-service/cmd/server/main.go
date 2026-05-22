@@ -12,13 +12,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/yourname/freelance-platform/job-service/config"
-	grpchandler "github.com/yourname/freelance-platform/job-service/internal/delivery/grpc"
-	"github.com/yourname/freelance-platform/job-service/internal/email"
-	"github.com/yourname/freelance-platform/job-service/internal/messaging"
-	pgRepo "github.com/yourname/freelance-platform/job-service/internal/repository/postgres"
-	"github.com/yourname/freelance-platform/job-service/internal/usecase"
-	pb "github.com/yourname/freelance-platform/job-service/proto/job"
+	"github.com/bekgm/Final-AP2/job-service/config"
+	grpchandler "github.com/bekgm/Final-AP2/job-service/internal/delivery/grpc"
+	"github.com/bekgm/Final-AP2/job-service/internal/email"
+	"github.com/bekgm/Final-AP2/job-service/internal/messaging"
+	pgRepo "github.com/bekgm/Final-AP2/job-service/internal/repository/postgres"
+	"github.com/bekgm/Final-AP2/job-service/internal/usecase"
+	pb "github.com/bekgm/Final-AP2/job-service/proto/job"
 )
 
 func main() {
