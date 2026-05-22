@@ -91,3 +91,9 @@ func (p *Publisher) Close() {
 		_ = p.conn.Close()
 	}
 }
+
+// NoopPublisher is a no-op implementation for testing.
+type NoopPublisher struct{}
+
+func (n *NoopPublisher) PublishJobAccepted(_, _, _ string) error { return nil }
+func (n *NoopPublisher) Close()                                   {}

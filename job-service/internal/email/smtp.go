@@ -58,3 +58,9 @@ func (s *SMTPSender) SendFreelancerAccepted(toEmail, jobTitle string) error {
 	)
 	return s.send(toEmail, subject, body)
 }
+
+// NoopSender is a no-op email sender for testing.
+type NoopSender struct{}
+
+func (n *NoopSender) SendApplicationReceived(_, _, _ string) error { return nil }
+func (n *NoopSender) SendFreelancerAccepted(_, _ string) error     { return nil }
