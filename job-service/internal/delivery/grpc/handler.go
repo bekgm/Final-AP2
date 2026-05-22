@@ -69,6 +69,19 @@ func (h *JobHandler) AcceptFreelancer(ctx context.Context, req *pb.AcceptFreelan
 	}, nil
 }
 
+func (h *JobHandler) ListApplications(ctx context.Context, req *pb.ListApplicationsRequest) (*pb.ListApplicationsResponse, error) {
+	apps, err := h.uc.ListApplications(req.JobId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+
+	var protoApps []*pb.Application
+	for _, app := range apps {
+		protoApps = append(protoApps, domainAppToProto(app))
+	}
+	return &pb.ListApplicationsResponse{Applications: protoApps}, nil
+}
+
 func (h *JobHandler) CompleteJob(ctx context.Context, req *pb.CompleteJobRequest) (*pb.CompleteJobResponse, error) {
 	job, err := h.uc.CompleteJob(req.JobId)
 	if err != nil {

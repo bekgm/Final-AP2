@@ -195,6 +195,7 @@ func main() {
 	// Job routes
 	mux.HandleFunc("POST /jobs", s.handleCreateJob)
 	mux.HandleFunc("GET /jobs/{job_id}", s.handleGetJob)
+	mux.HandleFunc("GET /jobs/{job_id}/applications", s.handleListApplications)
 	mux.HandleFunc("GET /jobs", s.handleListJobs)
 	mux.HandleFunc("POST /jobs/{job_id}/apply", s.handleApplyToJob)
 	mux.HandleFunc("POST /jobs/{job_id}/accept", s.handleAcceptFreelancer)
@@ -341,6 +342,34 @@ func (s *server) handleApplyToJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusCreated, appToDTO(resp.GetApplication()))
+}
+
+type listApplicationsResponse struct {
+	Applications []applicationDTO `json:"applications"`
+}
+
+func (s *server) handleListApplications(w http.ResponseWriter, r *http.Request) {
+	jobID := r.PathValue("job_id")
+	if jobID == "" {
+		writeError(w, http.StatusBadRequest, "job_id is required")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	resp, err := s.job.ListApplications(ctx, &pb.ListApplicationsRequest{JobId: jobID})
+	if err != nil {
+		code, msg := httpStatusFromGRPC(err)
+		writeError(w, code, msg)
+		return
+	}
+
+	out := listApplicationsResponse{}
+	for _, app := range resp.GetApplications() {
+		out.Applications = append(out.Applications, appToDTO(app))
+	}
+	writeJSON(w, http.StatusOK, out)
 }
 
 type acceptFreelancerBody struct {

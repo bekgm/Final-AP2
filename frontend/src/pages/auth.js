@@ -62,11 +62,9 @@ export function renderRegister(app) {
             <label class="form-label">I want to</label>
             <div class="role-selector">
               <div class="role-option selected" data-role="client" id="role-client">
-                <div class="role-icon">💼</div>
                 <div class="role-name">Hire Talent</div>
               </div>
               <div class="role-option" data-role="freelancer" id="role-freelancer">
-                <div class="role-icon">💻</div>
                 <div class="role-name">Find Work</div>
               </div>
             </div>

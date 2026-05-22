@@ -60,6 +60,9 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    user: "0"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
       interval: 5s
@@ -82,9 +85,10 @@ services:
     image: grafana/loki:3.3.2
     ports:
       - "3100:3100"
+    user: "0"
     volumes:
       - ./observability/loki-config.yml:/etc/loki/local-config.yaml:ro
-      - loki_data:/tmp/loki
+      - loki_data:/loki
     command: ["-config.file=/etc/loki/local-config.yaml"]
     restart: unless-stopped
 
@@ -105,9 +109,10 @@ services:
       - "3200:3200"
       - "4317:4317"
       - "4318:4318"
+    user: "0"
     volumes:
       - ./observability/tempo-config.yml:/etc/tempo.yaml:ro
-      - tempo_data:/tmp/tempo
+      - tempo_data:/var/tempo
     command: ["-config.file=/etc/tempo.yaml"]
     restart: unless-stopped
 
@@ -267,7 +272,7 @@ services:
     build:
       context: ./frontend
     ports:
-      - "3000:3000"
+      - "3002:3000"
     depends_on:
       job-gateway:
         condition: service_started
@@ -277,6 +282,7 @@ volumes:
   pgdata_users:
   pgdata_jobs:
   pgdata_messaging:
+  rabbitmq_data:
   prometheus_data:
   loki_data:
   tempo_data:

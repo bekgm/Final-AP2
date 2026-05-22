@@ -15,7 +15,7 @@ export async function renderJobDetail(app, jobId) {
   try {
     job = await api.getJob(jobId);
   } catch (err) {
-    app.querySelector('.job-detail').innerHTML = `<div class="empty-state"><div class="empty-state-icon">😕</div><h3>Job not found</h3><p>${err.message}</p><a href="#/jobs" class="btn btn-primary">Back to Jobs</a></div>`;
+    app.querySelector('.job-detail').innerHTML = `<div class="empty-state"><h3>Job not found</h3><p>${err.message}</p><a href="#/jobs" class="btn btn-primary">Back to Jobs</a></div>`;
     return;
   }
 
@@ -38,9 +38,9 @@ export async function renderJobDetail(app, jobId) {
         <h1>${escapeHtml(job.title)}</h1>
         <div class="job-detail-info">
           ${statusBadge(job.status)}
-          <div class="job-detail-info-item">💰 ${formatBudget(job.budget)}</div>
-          <div class="job-detail-info-item">👤 ${escapeHtml(clientName)}</div>
-          <div class="job-detail-info-item">📅 ${formatDate(job.created_at)}</div>
+          <div class="job-detail-info-item">Budget: ${formatBudget(job.budget)}</div>
+          <div class="job-detail-info-item">Client: ${escapeHtml(clientName)}</div>
+          <div class="job-detail-info-item">Posted: ${formatDate(job.created_at)}</div>
         </div>
         <h3 style="font-weight:700;margin-bottom:12px;">Description</h3>
         <div class="job-detail-desc">${escapeHtml(job.description)}</div>
@@ -223,8 +223,27 @@ export async function renderJobDetail(app, jobId) {
 
   // Load applications for job owner
   if (isOwner) {
-    const allApps = JSON.parse(localStorage.getItem('global_applications') || '[]');
-    const jobApps = allApps.filter(a => a.jobId === jobId);
+    let jobApps = [];
+    try {
+      const applicationsData = await api.listApplications(jobId);
+      jobApps = await Promise.all((applicationsData.applications || []).map(async a => {
+        let freelancerName = a.freelancer_id;
+        try {
+          const freelancer = await api.getUserById(a.freelancer_id);
+          freelancerName = freelancer.name || freelancer.email || a.freelancer_id;
+        } catch {
+        }
+        return {
+          applicationId: a.id,
+          freelancerId: a.freelancer_id,
+          freelancerName,
+          coverLetter: a.cover_letter,
+          status: a.status,
+        };
+      }));
+    } catch (err) {
+      showToast(`Failed to load applications: ${err.message}`, 'error');
+    }
     
     window.acceptFreelancerMock = (appId, fname, freelancerId) => {
       showModal(`

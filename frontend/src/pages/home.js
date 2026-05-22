@@ -46,17 +46,17 @@ export function renderHome(app) {
         <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:24px;text-align:center;">How It Works</h2>
         <div class="stats">
           <div class="card" style="text-align:center;padding:32px;">
-            <div style="font-size:2.5rem;margin-bottom:12px;">📝</div>
+            
             <h3 style="font-weight:700;margin-bottom:8px;">Post a Job</h3>
             <p style="color:var(--text-secondary);font-size:0.9rem;">Describe your project, set a budget, and publish it for freelancers to see.</p>
           </div>
           <div class="card" style="text-align:center;padding:32px;">
-            <div style="font-size:2.5rem;margin-bottom:12px;">🔍</div>
+            
             <h3 style="font-weight:700;margin-bottom:8px;">Get Proposals</h3>
             <p style="color:var(--text-secondary);font-size:0.9rem;">Receive applications from skilled freelancers with cover letters.</p>
           </div>
           <div class="card" style="text-align:center;padding:32px;">
-            <div style="font-size:2.5rem;margin-bottom:12px;">🤝</div>
+            
             <h3 style="font-weight:700;margin-bottom:8px;">Collaborate</h3>
             <p style="color:var(--text-secondary);font-size:0.9rem;">Accept a freelancer and start working together via built-in messaging.</p>
           </div>

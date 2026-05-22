@@ -22,7 +22,7 @@ export function renderMessages(app) {
       <div class="chat-area" id="chat-area">
         <div class="chat-empty">
           <div style="text-align:center">
-            <div style="font-size:3rem;margin-bottom:16px;">💬</div>
+            
             <p>Select a conversation to start messaging</p>
           </div>
         </div>
@@ -51,7 +51,7 @@ export function renderMessages(app) {
     try {
       const dialogs = await api.getDialogs();
       if (!dialogs || dialogs.length === 0) {
-        list.innerHTML = `<div class="empty-state" style="padding:40px 20px"><div class="empty-state-icon">📭</div><h3 style="font-size:1rem">No conversations</h3><p style="font-size:0.85rem">Start a conversation from a job page</p></div>`;
+        list.innerHTML = `<div class="empty-state" style="padding:40px 20px"><h3 style="font-size:1rem">No conversations</h3><p style="font-size:0.85rem">Start a conversation from a job page</p></div>`;
         return;
       }
 
@@ -159,7 +159,7 @@ export function renderMessages(app) {
     try {
       const messages = await api.getMessages(otherUserId, projectId || '');
       if (!messages || messages.length === 0) {
-        container.innerHTML = '<div class="chat-empty"><p>No messages yet. Say hello! 👋</p></div>';
+        container.innerHTML = '<div class="chat-empty"><p>No messages yet. Start the conversation.</p></div>';
         return;
       }
       const myId = api.userId;

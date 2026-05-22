@@ -47,9 +47,9 @@ export function renderNavbar() {
       ${isAuth ? `
         <a href="#/messages" class="${isActiveRoute('/messages')}" id="nav-messages-link" style="display:flex;align-items:center;">
           Messages
-          <span id="nav-unread-badge" style="display:none; background:#ef4444; color:white; font-size:0.7rem; font-weight:bold; border-radius:9999px; padding:2px 6px; margin-left:6px; line-height:1;">0</span>
+          <span id="nav-unread-badge" style="display:none; background:var(--danger); color:white; font-size:0.7rem; font-weight:bold; border-radius:9999px; padding:2px 6px; margin-left:6px; line-height:1;">0</span>
         </a>
-        <a href="#/profile" class="${isActiveRoute('/profile')}"><span class="hide-mobile">👤 </span>${user?.name || 'Profile'}</a>
+        <a href="#/profile" class="${isActiveRoute('/profile')}">${user?.name || 'Profile'}</a>
         <button id="logout-btn" class="btn btn-ghost btn-sm">Logout</button>
       ` : `
         <a href="#/login" class="btn btn-ghost btn-sm">Sign In</a>

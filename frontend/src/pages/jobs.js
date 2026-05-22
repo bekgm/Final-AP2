@@ -46,14 +46,14 @@ export function renderJobs(app) {
       renderJobCards(allJobs);
       renderPagination(data.total || 0);
     } catch (err) {
-      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Failed to load jobs</h3><p>${err.message}</p></div>`;
+      container.innerHTML = `<div class="empty-state"><h3>Failed to load jobs</h3><p>${err.message}</p></div>`;
     }
   }
 
   function renderJobCards(jobs) {
     const container = document.getElementById('jobs-container');
     if (!jobs || jobs.length === 0) {
-      container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📋</div><h3>No jobs found</h3><p>Be the first to post a job opportunity!</p>${api.isAuthenticated() && isClient ? '<button class="btn btn-primary" onclick="document.getElementById(\'create-job-btn\')?.click()">Post a Job</button>' : ''}</div>`;
+      container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><h3>No jobs found</h3><p>Be the first to post a job opportunity!</p>${api.isAuthenticated() && isClient ? '<button class="btn btn-primary" onclick="document.getElementById(\'create-job-btn\')?.click()">Post a Job</button>' : ''}</div>`;
       return;
     }
     container.innerHTML = jobs.map(job => `

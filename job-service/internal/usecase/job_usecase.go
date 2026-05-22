@@ -71,6 +71,13 @@ func (uc *JobUseCase) ListJobs(page, pageSize int, clientID string) ([]*domain.J
 	return uc.jobRepo.List(page, pageSize, clientID)
 }
 
+func (uc *JobUseCase) ListApplications(jobID string) ([]*domain.Application, error) {
+	if jobID == "" {
+		return nil, errors.New("job_id is required")
+	}
+	return uc.appRepo.ListByJob(jobID)
+}
+
 func (uc *JobUseCase) ApplyToJob(jobID, freelancerID, coverLetter string) (*domain.Application, error) {
 	job, err := uc.jobRepo.GetByID(jobID)
 	if err != nil {
@@ -92,11 +99,6 @@ func (uc *JobUseCase) ApplyToJob(jobID, freelancerID, coverLetter string) (*doma
 	if err := uc.appRepo.Create(app); err != nil {
 		return nil, err
 	}
-
-	// Non-blocking email notification to client (best-effort)
-	go func() {
-		_ = uc.emailSender.SendApplicationReceived("client@example.com", job.Title, freelancerID)
-	}()
 
 	return app, nil
 }

@@ -44,16 +44,16 @@ export async function renderProfile(app, targetUserId = null) {
         <div class="profile-email">${escapeHtml(user.email)}</div>
         <span class="badge badge-${roleName}" style="margin-top:6px;">${roleLabel}</span>
         ${bioText ? `<div class="profile-bio">${escapeHtml(bioText)}</div>` : ''}
-        ${roleName === 'freelancer' && portfolioLink ? `<div style="margin-top:10px;"><a href="${escapeHtml(portfolioLink)}" target="_blank" style="color:var(--primary);text-decoration:underline;">🔗 View Portfolio</a></div>` : ''}
+        ${roleName === 'freelancer' && portfolioLink ? `<div style="margin-top:10px;"><a href="${escapeHtml(portfolioLink)}" target="_blank" style="color:var(--primary);text-decoration:underline;">View Portfolio</a></div>` : ''}
         ${roleName === 'freelancer' && user.skills?.length ? `<div class="profile-skills">${user.skills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
       </div>
     </div>
 
-    ${isOwnProfile ? `<button class="btn btn-secondary" id="edit-profile-btn" style="margin-bottom:32px;">✏️ Edit Profile</button>` : ''}
+    ${isOwnProfile ? `<button class="btn btn-secondary" id="edit-profile-btn" style="margin-bottom:32px;">Edit Profile</button>` : ''}
 
     ${roleName === 'freelancer' ? `
       <div class="profile-reviews-section" style="margin-top: 32px; margin-bottom: 32px;">
-        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">Client Reviews ⭐</h2>
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">Client Reviews</h2>
         ${userReviews.length === 0 ? `
           <p style="color:var(--text-secondary);font-style:italic;">No reviews yet from clients.</p>
         ` : `
@@ -66,7 +66,7 @@ export async function renderProfile(app, targetUserId = null) {
                 </div>
                 <div style="font-size:0.85rem; font-weight:600; color:var(--primary); margin-bottom:8px;">Project: ${escapeHtml(r.jobTitle)}</div>
                 <p style="font-size:0.9rem; color:var(--text); line-height:1.5; font-style:italic;">"${escapeHtml(r.feedback)}"</p>
-                <div style="color:#fbbf24; margin-top:8px;">★★★★★</div>
+                <div style="color:var(--text-secondary); margin-top:8px;">5 / 5</div>
               </div>
             `).join('')}
           </div>
@@ -87,7 +87,7 @@ export async function renderProfile(app, targetUserId = null) {
       const jobs = data.jobs || [];
       const container = document.getElementById('user-jobs');
       if (jobs.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><h3>No jobs posted yet</h3><p>Post your first job to get started!</p><a href="#/jobs" class="btn btn-primary">Browse Jobs</a></div>`;
+        container.innerHTML = `<div class="empty-state"><h3>No jobs posted yet</h3><p>Post your first job to get started!</p><a href="#/jobs" class="btn btn-primary">Browse Jobs</a></div>`;
       } else {
         container.innerHTML = `<div class="jobs-grid">${jobs.map(j => `
           <div class="card job-card" data-job-id="${j.id}" style="cursor:pointer">
@@ -105,7 +105,7 @@ export async function renderProfile(app, targetUserId = null) {
       document.getElementById('user-jobs').innerHTML = `<p style="color:var(--danger)">${err.message}</p>`;
     }
   } else {
-    document.getElementById('user-jobs').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🚀</div><h3>Your applications</h3><p>Browse jobs and apply to start freelancing!</p><a href="#/jobs" class="btn btn-primary">Find Work</a></div>`;
+    document.getElementById('user-jobs').innerHTML = `<div class="empty-state"><h3>Your applications</h3><p>Browse jobs and apply to start freelancing!</p><a href="#/jobs" class="btn btn-primary">Find Work</a></div>`;
   }
 
   // Edit profile modal

@@ -110,6 +110,10 @@ class ApiClient {
     });
   }
 
+  async listApplications(jobId) {
+    return this.request(`${API_BASE}/jobs/${jobId}/applications`);
+  }
+
   async acceptFreelancer(jobId, applicationId) {
     return this.request(`${API_BASE}/jobs/${jobId}/accept`, {
       method: 'POST',
